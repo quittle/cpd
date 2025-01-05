@@ -1,13 +1,13 @@
 use std::path::PathBuf;
 
 use crate::{
-    battle_file, web_actor::WebActor, Actor, Battle, Board, BoardItem, Card, CardAction, CardId,
-    Character, CharacterId, CharacterRace, DumbActor, Health, RandomProvider, Target, Team, TeamId,
+    battle_file, web_actor::WebActor, Actor, Battle, Board, BoardItem, CardId, Character,
+    CharacterId, CharacterRace, DumbActor, EffectId, Health, RandomProvider, Team, TeamId,
     TerminalActor, U64Range,
 };
 use futures::future::join_all;
 
-fn normalize_maybe_u64_range(life_number_range: &battle_file::MaybeU64Range) -> U64Range {
+pub fn normalize_maybe_u64_range(life_number_range: &battle_file::MaybeU64Range) -> U64Range {
     match *life_number_range {
         battle_file::MaybeU64Range::Absolute(value) => U64Range(value, value),
         battle_file::MaybeU64Range::Range(low, high) => U64Range(low, high),
@@ -96,65 +96,13 @@ impl Battle {
             cards: battle
                 .cards
                 .iter()
-                .map(|card| {
-                    let map_target = |target: &battle_file::Target| match target {
-                        battle_file::Target::Me => Target::Me,
-                        battle_file::Target::Others => Target::Others,
-                        battle_file::Target::Any => Target::Any,
-                    };
-                    (
-                        CardId::new(card.id),
-                        Card {
-                            id: CardId::new(card.id),
-                            name: card.name.clone(),
-                            description: card.description.clone(),
-                            flavor: card.flavor.clone(),
-                            range: card.range.unwrap_or(0),
-                            actions: card
-                                .actions
-                                .iter()
-                                .map(|action| match action {
-                                    battle_file::CardAction::Damage {
-                                        target,
-                                        amount,
-                                        area,
-                                    } => CardAction::Damage {
-                                        target: map_target(target),
-                                        amount: normalize_maybe_u64_range(amount),
-                                        area: area
-                                            .as_ref()
-                                            .map(normalize_maybe_u64_range)
-                                            .unwrap_or(U64Range(0, 0)),
-                                    },
-                                    battle_file::CardAction::Heal {
-                                        target,
-                                        amount,
-                                        area,
-                                    } => CardAction::Heal {
-                                        target: map_target(target),
-                                        amount: normalize_maybe_u64_range(amount),
-                                        area: area
-                                            .as_ref()
-                                            .map(normalize_maybe_u64_range)
-                                            .unwrap_or(U64Range(0, 0)),
-                                    },
-                                    battle_file::CardAction::GainAction { target, amount } => {
-                                        CardAction::GainAction {
-                                            target: map_target(target),
-                                            amount: normalize_maybe_u64_range(amount),
-                                        }
-                                    }
-                                    battle_file::CardAction::Move { target, amount } => {
-                                        CardAction::Move {
-                                            target: map_target(target),
-                                            amount: normalize_maybe_u64_range(amount),
-                                        }
-                                    }
-                                })
-                                .collect(),
-                        },
-                    )
-                })
+                .map(|card| (CardId::new(card.id), deserialize_card(card)))
+                .collect(),
+            effects: battle
+                .effects
+                .iter()
+                .enumerate()
+                .map(|(index, effect)| (EffectId::new(index), deserialize_effect(effect)))
                 .collect(),
             teams: battle
                 .teams
@@ -205,5 +153,77 @@ impl Battle {
             board,
             asset_directory: canonical_asset_directory,
         })
+    }
+}
+
+fn deserialize_card_action(card_action: &battle_file::CardAction) -> crate::CardAction {
+    match card_action {
+        battle_file::CardAction::Damage {
+            target,
+            amount,
+            area,
+        } => crate::CardAction::Damage {
+            target: deserialize_target(target),
+            amount: normalize_maybe_u64_range(amount),
+            area: area
+                .as_ref()
+                .map(normalize_maybe_u64_range)
+                .unwrap_or(U64Range(0, 0)),
+        },
+        battle_file::CardAction::Heal {
+            target,
+            amount,
+            area,
+        } => crate::CardAction::Heal {
+            target: deserialize_target(target),
+            amount: normalize_maybe_u64_range(amount),
+            area: area
+                .as_ref()
+                .map(normalize_maybe_u64_range)
+                .unwrap_or(U64Range(0, 0)),
+        },
+        battle_file::CardAction::GainAction { target, amount } => crate::CardAction::GainAction {
+            target: deserialize_target(target),
+            amount: normalize_maybe_u64_range(amount),
+        },
+        battle_file::CardAction::Move { target, amount } => crate::CardAction::Move {
+            target: deserialize_target(target),
+            amount: normalize_maybe_u64_range(amount),
+        },
+    }
+}
+
+fn deserialize_effect(effect: &battle_file::Effect) -> crate::Effect {
+    crate::Effect {
+        id: crate::EffectId::new(effect.id),
+        name: effect.name.clone(),
+        description: effect.description.clone(),
+        actions: effect.actions.iter().map(deserialize_card_action).collect(),
+        triggers: effect.triggers.iter().map(deserailize_trigger).collect(),
+    }
+}
+
+fn deserialize_card(card: &battle_file::Card) -> crate::Card {
+    crate::Card {
+        id: crate::CardId::new(card.id),
+        name: card.name.clone(),
+        description: card.description.clone(),
+        flavor: card.flavor.clone(),
+        range: card.range.unwrap_or(0),
+        actions: card.actions.iter().map(deserialize_card_action).collect(),
+    }
+}
+
+fn deserialize_target(target: &battle_file::Target) -> crate::Target {
+    match target {
+        battle_file::Target::Me => crate::Target::Me,
+        battle_file::Target::Others => crate::Target::Others,
+        battle_file::Target::Any => crate::Target::Any,
+    }
+}
+
+fn deserailize_trigger(trigger: &battle_file::Trigger) -> crate::Trigger {
+    match trigger {
+        battle_file::Trigger::Death => crate::Trigger::Death,
     }
 }

@@ -12,6 +12,22 @@
         "width": 6,
         "height": 6
     },
+    "effects": [
+        {
+            "id": 0,
+            "name": "Explode",
+            "description": "Deal damage to surroundings upon death",
+            "triggers": ["death"],
+            "actions": [
+                {
+                    "type": "damage",
+                    "target": "self",
+                    "amount": [3, 10],
+                    "area": 1
+                }
+            ]
+        }
+    ],
     "cards": [
         {
             "id": 0,

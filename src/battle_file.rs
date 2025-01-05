@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 pub type LifeNumber = u64;
 pub type CardId = usize;
+pub type EffectId = usize;
 pub type HandSize = u8;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -13,6 +14,8 @@ pub struct Battle {
     pub introduction: Option<StoryCard>,
     pub default_hand_size: HandSize,
     pub default_movement: Option<u64>,
+    #[serde(default)]
+    pub effects: Vec<Effect>,
     pub cards: Vec<Card>,
     pub teams: Vec<Team>,
 }
@@ -120,6 +123,23 @@ pub enum Target {
 pub enum MaybeU64Range {
     Range(u64, u64),
     Absolute(u64),
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(deny_unknown_fields)]
+pub struct Effect {
+    pub id: EffectId,
+    pub name: String,
+    pub description: String,
+    pub triggers: Vec<Trigger>,
+    pub actions: Vec<CardAction>,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "snake_case")]
+pub enum Trigger {
+    Death,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]

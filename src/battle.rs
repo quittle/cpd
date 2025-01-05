@@ -1,7 +1,7 @@
 use crate::{
     battle_file, battle_markup, Action, ActionError, Actor, Attack, BattleText, Board, BoardItem,
-    Card, CardAction, CardId, Character, CharacterId, DeclareWrappedType, GridLocation, Health,
-    RandomProvider, Target, U64Range,
+    Card, CardAction, CardId, Character, CharacterId, DeclareWrappedType, Effect, EffectId,
+    GridLocation, Health, RandomProvider, Target, U64Range,
 };
 use serde::Serialize;
 use std::collections::HashMap;
@@ -35,6 +35,7 @@ pub struct Battle {
     pub random_provider: Box<dyn RandomProvider>,
     pub round: u16,
     pub cards: HashMap<CardId, Card>,
+    pub effects: HashMap<EffectId, Effect>,
     pub default_turn_actions: u64,
     #[serde(skip)]
     pub asset_directory: Option<PathBuf>,
