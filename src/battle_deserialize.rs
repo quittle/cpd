@@ -68,6 +68,11 @@ impl Battle {
                         Character {
                             id: CharacterId::new(index),
                             name: member.name.clone(),
+                            effects: member
+                                .effects
+                                .iter()
+                                .map(|effect| EffectId::new(*effect))
+                                .collect(),
                             race: match member.race {
                                 battle_file::Race::Human => CharacterRace::Human,
                                 battle_file::Race::Machine => CharacterRace::Machine,

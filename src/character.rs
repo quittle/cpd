@@ -39,6 +39,7 @@ impl SubAssign<Attack> for Health {
 pub struct Character {
     pub id: CharacterId,
     pub name: String,
+    pub effects: Vec<EffectId>,
     pub race: CharacterRace,
     pub hand: Vec<CardId>,
     pub deck: Vec<CardId>,
@@ -72,6 +73,7 @@ impl Character {
     pub fn heal(&mut self, healing: Health) {
         self.health = min(self.health + healing, self.max_health);
     }
+
 }
 
 #[derive(Clone)]

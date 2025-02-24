@@ -4,7 +4,7 @@ use crate::{battle_file, CardAction, DeclareWrappedType, Target};
 
 DeclareWrappedType!(EffectId, id, battle_file::EffectId);
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, PartialEq)]
 pub enum Trigger {
     Death,
 }
@@ -32,5 +32,9 @@ impl Effect {
             }
         }
         target
+    }
+
+    pub fn has_trigger(&self, trigger: Trigger) -> bool {
+        self.triggers.contains(&trigger)
     }
 }

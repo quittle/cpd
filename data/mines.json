@@ -68,9 +68,43 @@
                     "race": "Machine",
                     "image": "mine.png",
                     "base_health": 1,
+                    "effects": [0],
                     "hand_size": 1,
                     "cards": [0],
                     "location": [2, 2],
+                    "movement": 0
+                },
+                {
+                    "name": "Mine",
+                    "race": "Machine",
+                    "image": "mine.png",
+                    "base_health": 1,
+                    "effects": [0],
+                    "hand_size": 1,
+                    "cards": [0],
+                    "location": [1, 2],
+                    "movement": 0
+                },
+                {
+                    "name": "Mine",
+                    "race": "Machine",
+                    "image": "mine.png",
+                    "base_health": 1,
+                    "effects": [0],
+                    "hand_size": 1,
+                    "cards": [0],
+                    "location": [1, 1],
+                    "movement": 0
+                },
+                {
+                    "name": "Mine",
+                    "race": "Machine",
+                    "image": "mine.png",
+                    "base_health": 1,
+                    "effects": [0],
+                    "hand_size": 1,
+                    "cards": [0],
+                    "location": [0, 0],
                     "movement": 0
                 }
             ]

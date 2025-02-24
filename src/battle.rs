@@ -1,7 +1,7 @@
 use crate::{
     battle_file, battle_markup, Action, ActionError, Actor, Attack, BattleText, Board, BoardItem,
     Card, CardAction, CardId, Character, CharacterId, DeclareWrappedType, Effect, EffectId,
-    GridLocation, Health, RandomProvider, Target, U64Range,
+    GridLocation, Health, RandomProvider, Target, Trigger, U64Range,
 };
 use serde::Serialize;
 use std::collections::HashMap;
@@ -220,7 +220,7 @@ impl Battle {
                     return false;
                 }
 
-                let mut history_entry = battle_markup![
+                let history_entry = battle_markup![
                     @id(&character.name),
                     " used ",
                     @attack(&card.name),
@@ -228,10 +228,11 @@ impl Battle {
                     @id(&target_character.name),
                     ". "
                 ];
+                self.history.push(history_entry);
 
                 self.characters.get_mut(actor).unwrap().remaining_actions -= 1;
 
-                for action in &card.actions {
+                for action in card.actions.clone() {
                     // If the action specifically targets me, then force it to target the actor
                     // rather than the potentially other target.
                     let target_id = if action.target() == &Target::Me {
@@ -240,51 +241,8 @@ impl Battle {
                         &target_id
                     };
 
-                    let target_character = self.characters.get_mut(target_id).unwrap();
-                    match action {
-                        CardAction::Damage { amount, area, .. } => {
-                            for (attacked_character_id, value) in
-                                self.get_all_character_amounts_in_range(*target_id, area, amount)
-                            {
-                                let attacked_character =
-                                    self.characters.get_mut(&attacked_character_id).unwrap();
-
-                                history_entry.extend(battle_markup![@damage(&value), " damage to ", @id(&attacked_character.name), ". " ]);
-                                attacked_character.health -= Attack::new(value);
-                            }
-                        }
-                        CardAction::Heal { amount, area, .. } => {
-                            for (healed_character_id, value) in
-                                self.get_all_character_amounts_in_range(*target_id, area, amount)
-                            {
-                                let healed_character =
-                                    self.characters.get_mut(&healed_character_id).unwrap();
-
-                                history_entry
-                                    .extend(battle_markup!["Healed ", @damage(&value), ". "]);
-
-                                healed_character.heal(Health::new(value));
-                            }
-                        }
-                        CardAction::GainAction { amount, .. } => {
-                            let value = amount.resolve(self.random_provider.as_ref());
-                            history_entry.extend(battle_markup![format!(
-                                "Gained {} action{}. ",
-                                value,
-                                if value != 1 { "s" } else { "" }
-                            )]);
-                            target_character.remaining_actions += value;
-                        }
-                        CardAction::Move { amount, .. } => {
-                            let value = amount.resolve(self.random_provider.as_ref());
-                            history_entry
-                                .extend(battle_markup![format!("Moved {} spaces. ", value)]);
-                            target_character.movement += value;
-                        }
-                    }
+                    self.try_run_card_action(*actor, *target_id, &action);
                 }
-
-                self.history.push(history_entry);
 
                 // Remove card from hand
                 let hand = &mut self.characters.get_mut(actor).unwrap().hand;
@@ -351,6 +309,99 @@ impl Battle {
             actor.on_game_over(self).await;
         }
         Ok(())
+    }
+
+    fn try_run_card_action(
+        &mut self,
+        actor: CharacterId,
+        target_id: CharacterId,
+        action: &CardAction,
+    ) -> bool {
+        let mut history_entry = vec![];
+
+        // If the action specifically targets me, then force it to target the actor
+        // rather than the potentially other target.
+        let target_id = if action.target() == &Target::Me {
+            &actor
+        } else {
+            &target_id
+        };
+
+        let target_character = self.characters.get_mut(target_id).unwrap();
+        match action {
+            CardAction::Damage { amount, area, .. } => {
+                for (attacked_character_id, value) in
+                    self.get_all_character_amounts_in_range(*target_id, area, amount)
+                {
+                    let attacked_character =
+                        self.characters.get_mut(&attacked_character_id).unwrap();
+
+                    if attacked_character.is_dead() {
+                        continue;
+                    }
+
+                    history_entry.extend(battle_markup![@damage(&value), " damage to ", @id(&attacked_character.name), ". " ]);
+                    attacked_character.health -= Attack::new(value);
+
+                    if attacked_character.is_dead() {
+                        for effect_id in attacked_character.effects.clone() {
+                            self.try_run_effect(
+                                attacked_character_id,
+                                attacked_character_id,
+                                effect_id,
+                                Trigger::Death,
+                            );
+                        }
+                    }
+                }
+            }
+            CardAction::Heal { amount, area, .. } => {
+                for (healed_character_id, value) in
+                    self.get_all_character_amounts_in_range(*target_id, area, amount)
+                {
+                    let healed_character = self.characters.get_mut(&healed_character_id).unwrap();
+
+                    history_entry.extend(battle_markup!["Healed ", @damage(&value), ". "]);
+
+                    healed_character.heal(Health::new(value));
+                }
+            }
+            CardAction::GainAction { amount, .. } => {
+                let value = amount.resolve(self.random_provider.as_ref());
+                history_entry.extend(battle_markup![format!(
+                    "Gained {} action{}. ",
+                    value,
+                    if value != 1 { "s" } else { "" }
+                )]);
+                target_character.remaining_actions += value;
+            }
+            CardAction::Move { amount, .. } => {
+                let value = amount.resolve(self.random_provider.as_ref());
+                history_entry.extend(battle_markup![format!("Moved {} spaces. ", value)]);
+                target_character.movement += value;
+            }
+        }
+
+        self.history.push(history_entry);
+
+        true
+    }
+
+    fn try_run_effect(
+        &mut self,
+        actor: CharacterId,
+        target_id: CharacterId,
+        effect_id: EffectId,
+        trigger: Trigger,
+    ) {
+        let effect = &self.effects[&effect_id];
+        if !effect.has_trigger(trigger) {
+            return;
+        }
+
+        for action in effect.actions.clone() {
+            self.try_run_card_action(actor, target_id, &action);
+        }
     }
 }
 

@@ -37,7 +37,9 @@ impl Board {
             .map(|location| match self.grid.get(location.x, location.y) {
                 Some(BoardItem::Character(id)) => *id,
                 _ => {
-                    unreachable!("Only valid characters available due to filterin in find_in_range")
+                    unreachable!(
+                        "Only valid characters available due to filtering in find_in_range"
+                    )
                 }
             })
             .collect()

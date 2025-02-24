@@ -90,6 +90,8 @@ pub struct TeamMember {
     pub base_health: LifeNumber,
     pub max_health: Option<LifeNumber>,
     pub cards: Vec<CardId>,
+    #[serde(default)]
+    pub effects: Vec<EffectId>,
     pub hand_size: Option<HandSize>,
     #[serde(default)]
     pub is_player: bool,
@@ -194,6 +196,22 @@ mod tests {
                 { "p": "Paragraph" }
             ],
             "board": { "width": 1, "height": 1 },
+            "effects": [
+                {
+                    "id": 0,
+                    "name": "effect name",
+                    "description": "effec description",
+                    "triggers": ["death"],
+                    "actions": [
+                        {
+                            "type": "damage",
+                            "target": "self",
+                            "amount": 1,
+                            "area": 1
+                        }
+                    ]
+                }
+            ],
             "cards": [
                 {
                     "id": 0,
@@ -220,6 +238,7 @@ mod tests {
                             "race": "Human",
                             "base_health": 10,
                             "cards": [0],
+                            "effects": [0],
                             "location": [0, 0]
                         }
                     ]
