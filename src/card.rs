@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{battle_file, DeclareWrappedType, RandomProvider};
+use crate::{DeclareWrappedType, RandomProvider, battle_file};
 
 DeclareWrappedType!(CardId, id, battle_file::CardId);
 

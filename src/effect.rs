@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{battle_file, CardAction, DeclareWrappedType, Target};
+use crate::{CardAction, DeclareWrappedType, Target, battle_file};
 
 DeclareWrappedType!(EffectId, id, battle_file::EffectId);
 

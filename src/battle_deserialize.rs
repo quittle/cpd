@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
 use crate::{
-    battle_file, web_actor::WebActor, Actor, Battle, Board, BoardItem, CardId, Character,
-    CharacterId, CharacterRace, DumbActor, EffectId, Health, RandomProvider, Team, TeamId,
-    TerminalActor, U64Range,
+    Actor, Battle, Board, BoardItem, CardId, Character, CharacterId, CharacterRace, DumbActor,
+    EffectId, Health, RandomProvider, Team, TeamId, TerminalActor, U64Range, battle_file,
+    web_actor::WebActor,
 };
 use futures::future::join_all;
 

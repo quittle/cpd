@@ -1,7 +1,8 @@
 use actix_web::{
+    App, HttpServer,
     dev::{ServerHandle, ServiceResponse},
     middleware::{ErrorHandlerResponse, ErrorHandlers},
-    web, App, HttpServer,
+    web,
 };
 use futures::executor::block_on;
 use std::{

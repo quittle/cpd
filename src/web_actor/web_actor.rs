@@ -8,8 +8,8 @@ use async_trait::async_trait;
 use serde::Serialize;
 use std::{path::Path, sync::Arc};
 use tokio::sync::{
-    mpsc::{channel, error::SendError, Receiver},
     Mutex,
+    mpsc::{Receiver, channel, error::SendError},
 };
 
 #[derive(Serialize)]

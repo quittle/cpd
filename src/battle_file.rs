@@ -37,7 +37,10 @@ impl Battle {
                     CardAction::Move { target, .. } => target,
                 };
                 if target != &Target::Me && card.range.is_none() {
-                    return Err(format!("Card with id {} has an action that can target others but without a range specified", card.id));
+                    return Err(format!(
+                        "Card with id {} has an action that can target others but without a range specified",
+                        card.id
+                    ));
                 }
             }
         }

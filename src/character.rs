@@ -73,7 +73,6 @@ impl Character {
     pub fn heal(&mut self, healing: Health) {
         self.health = min(self.health + healing, self.max_health);
     }
-
 }
 
 #[derive(Clone)]

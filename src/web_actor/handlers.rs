@@ -1,11 +1,11 @@
 use crate::{Action, ActionError, ActionFailure, ActionResult, CardId, CharacterId, GridLocation};
-use actix_web::{get, post, web, HttpResponse, Responder};
+use actix_web::{HttpResponse, Responder, get, post, web};
 use actix_web_lab::sse;
 use serde::Deserialize;
 use std::{sync::Arc, time::Duration};
 use tokio::sync::{
-    mpsc::{channel, error::SendError, Sender},
     Mutex,
+    mpsc::{Sender, channel, error::SendError},
 };
 
 pub type ArcEventSender = Arc<Mutex<Option<Sender<sse::Event>>>>;
