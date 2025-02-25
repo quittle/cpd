@@ -46,7 +46,7 @@ export default function App() {
   const { character_id: characterId, battle } = battleState;
 
   return (
-    <div style={{ display: "flex", maxWidth: "1500px" }}>
+    <div id="app">
       {battleState.battle.introduction ? (
         <StoryCard
           storyCard={battleState.battle.introduction}
@@ -57,12 +57,7 @@ export default function App() {
         <></>
       )}
       <div style={{ flexGrow: 5 }}>
-        <div
-          style={{
-            display: "flex",
-            gap: "4em",
-          }}
-        >
+        <div id="characters">
           <Character
             isPlayer={true}
             characterId={characterId}
@@ -87,14 +82,7 @@ export default function App() {
           }}
         >
           <GameBoard battleState={battleState} draggedCard={dragState} />
-          <ul
-            style={{
-              listStyle: "none",
-              display: "flex",
-              flexDirection: "column",
-              gap: "1em",
-            }}
-          >
+          <ul id="cards">
             {battle.characters[characterId].hand.map((cardId) => {
               const card = battle.cards[cardId];
               const target = getCardTarget(card);

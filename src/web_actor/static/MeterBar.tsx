@@ -19,29 +19,10 @@ const MeterBar: React.FC<MeterBarProps> = ({
 
   return (
     <div
+      className="meter-bar"
       style={{
-        textAlign: "center",
-        position: "relative",
-        fontFamily: "var(--font-family-pixelated)",
-        border: `2px solid ${backgroundColor}`,
+        borderColor: backgroundColor,
         background: `linear-gradient(to right, ${foregroundColor}, ${foregroundColor}, ${percentage}%, ${backgroundColor}, ${percentage}%, ${backgroundColor})`,
-        // Source: https://pixelcorners.lukeb.co.uk
-        clipPath: `polygon(
-            3px 6px,
-            6px 6px,
-            6px 3px,
-            calc(100% - 6px) 3px,
-            calc(100% - 6px) 6px,
-            calc(100% - 3px) 6px,
-            calc(100% - 3px) calc(100% - 6px),
-            calc(100% - 6px) calc(100% - 6px),
-            calc(100% - 6px) calc(100% - 3px),
-            6px calc(100% - 3px),
-            6px calc(100% - 6px),
-            3px calc(100% - 6px)
-        )`,
-        padding: "0.25em",
-        margin: "0.25em 0",
       }}
     >
       <span style={{ color: textColor }}>

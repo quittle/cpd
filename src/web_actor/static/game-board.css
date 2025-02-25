@@ -1,0 +1,13 @@
+.game-board {
+  background: #cddc39;
+  font-size: 100px;
+  & td {
+    border: 1px solid;
+    width: 1em;
+    height: 1em;
+    text-align: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+}

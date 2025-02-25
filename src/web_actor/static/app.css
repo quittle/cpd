@@ -1,0 +1,16 @@
+#app {
+  display: flex;
+  max-width: 1500px;
+}
+
+#characters {
+  display: flex;
+  gap: 4em;
+}
+
+#cards {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}

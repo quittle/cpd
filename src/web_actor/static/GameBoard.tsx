@@ -12,12 +12,7 @@ export function GameBoard(props: {
   const [selectedSquare, setSelectedSquare] = useState<Coordinate>();
 
   return (
-    <table
-      style={{
-        background: "#cddc39",
-        fontSize: "100px",
-      }}
-    >
+    <table className="game-board">
       <tbody>
         {battle.board.grid.members.map((row, y) => (
           <tr key={y}>
@@ -51,14 +46,8 @@ export function GameBoard(props: {
                 <td
                   key={x}
                   style={{
-                    border: `1px solid ${isSelectedSquare ? "red" : "black"}`,
-                    width: "1em",
-                    height: "1em",
-                    textAlign: "center",
+                    borderColor: isSelectedSquare ? "red" : "black",
                     backgroundImage: image,
-                    backgroundSize: "contain",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
                     opacity: isIneligible ? 0.5 : 1,
                   }}
                   onDragOver={(e) => {

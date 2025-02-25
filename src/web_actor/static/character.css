@@ -1,0 +1,12 @@
+.character {
+  background: #ededed;
+  padding: 1em;
+}
+
+.character-end-turn {
+  font-size: 2em;
+  padding: 1em;
+  margin-inline-start: 1em;
+  vertical-align: top;
+  cursor: pointer;
+}

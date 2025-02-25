@@ -28,6 +28,7 @@ export default function Card(props: {
 }) {
   return (
     <button
+      className="card"
       draggable={true}
       onDragStart={(e) => {
         e.dataTransfer.setData("text/plain", String(props.card.id));
@@ -36,29 +37,17 @@ export default function Card(props: {
       onClick={props.onClick}
       onDragEnd={props.onDragEnd}
       style={{
-        padding: 0,
-        borderWidth: "0.3em",
-        width: "15em",
         cursor: props.hasDefaultAction ? "pointer" : "grab",
       }}
     >
-      <b
-        style={{
-          background: "rgba(10, 10, 10, 0.3)",
-          display: "block",
-          padding: "0.3em",
-          borderBottom: "0.1em solid black",
-        }}
-      >
-        {props.card.name}
-      </b>
-      <div style={{ padding: "0.5em" }}>
+      <b className="card-header">{props.card.name}</b>
+      <div className="card-body">
         <p>{props.card.description}</p>
         <p>
           <i>{props.card.flavor}</i>
         </p>
         {props.card.range > 0 ? (
-          <p style={{ textAlign: "right" }}>{props.card.range} 🏹</p>
+          <p className="card-range">{props.card.range}</p>
         ) : null}
       </div>
     </button>

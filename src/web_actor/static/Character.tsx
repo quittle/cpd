@@ -21,9 +21,8 @@ export default function Character(props: {
 
   return (
     <div
+      className="character"
       style={{
-        background: "#ededed",
-        padding: "1em",
         opacity: isIneligible ? 0.5 : 1,
       }}
       onDragOver={(e) => {
@@ -57,13 +56,7 @@ export default function Character(props: {
       ) : null}
       {isPlayer ? (
         <button
-          style={{
-            fontSize: "2em",
-            padding: "1em",
-            marginInlineStart: "1em",
-            verticalAlign: "top",
-            cursor: "pointer",
-          }}
+          className="character-end-turn"
           onClick={async () => {
             await pass();
           }}
