@@ -3,6 +3,7 @@ import { Battle, CardId, Character, CharacterId } from "./battle";
 import { assetPath } from "./utils";
 import { pass, takeAction } from "./state";
 import { isCardEligible } from "./Card";
+import MeterBar from "./MeterBar";
 
 export default function Character(props: {
   isPlayer: boolean;
@@ -41,12 +42,17 @@ export default function Character(props: {
         await takeAction(draggedCard, characterId);
       }}
     >
+      <MeterBar
+        value={character.health}
+        max={character.max_health}
+        foregroundColor="red"
+        backgroundColor="black"
+        textColor="white"
+      />
       {character.image ? (
         <img
           src={assetPath(character.image)}
-          style={{
-            width: isPlayer ? "100px" : "100%",
-          }}
+          style={{ width: isPlayer ? "100px" : "100%" }}
         />
       ) : null}
       {isPlayer ? (
@@ -70,9 +76,6 @@ export default function Character(props: {
         : null}
       <div>
         Movement: <b>{character.movement}</b>
-      </div>
-      <div>
-        Health: <b>{character.health}</b>
       </div>
     </div>
   );

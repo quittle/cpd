@@ -12,6 +12,7 @@ export interface Character {
   hand: CardId[];
   deck: CardId[];
   health: number;
+  max_health: number;
   hand_size: number;
   remaining_actions: number;
   image: string | null;
@@ -25,13 +26,7 @@ export interface Team {
 
 export type BattleType = "Id" | "Attack" | "Damage";
 
-export type TypedText =
-  | {
-      Text: string;
-    }
-  | {
-      Typed: [BattleType, string];
-    };
+export type TypedText = { Text: string } | { Typed: [BattleType, string] };
 
 export type BattleHistoryEntry = TypedText[];
 
@@ -42,18 +37,8 @@ export enum ActionTarget {
 }
 
 export type CardAction =
-  | {
-      Damage: {
-        target: ActionTarget;
-        amount: number;
-      };
-    }
-  | {
-      Heal: {
-        target: ActionTarget;
-        amount: number;
-      };
-    };
+  | { Damage: { target: ActionTarget; amount: number } }
+  | { Heal: { target: ActionTarget; amount: number } };
 
 export interface Card {
   id: CardId;
