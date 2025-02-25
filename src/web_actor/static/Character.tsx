@@ -62,6 +62,7 @@ export default function Character(props: {
             padding: "1em",
             marginInlineStart: "1em",
             verticalAlign: "top",
+            cursor: "pointer",
           }}
           onClick={async () => {
             await pass();
