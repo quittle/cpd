@@ -7,7 +7,7 @@ use serde::Serialize;
 
 use crate::*;
 
-type HandSize = battle_file::HandSize;
+type HandSize = usize;
 
 DeclareWrappedType!(CharacterId, id, usize);
 
@@ -43,6 +43,7 @@ pub struct Character {
     pub race: CharacterRace,
     pub hand: Vec<CardId>,
     pub deck: Vec<CardId>,
+    pub discard: Vec<CardId>,
     pub health: Health,
     pub max_health: Health,
     pub remaining_actions: u64,
@@ -57,13 +58,20 @@ impl Character {
         self.health.health == 0
     }
 
-    pub fn reset_hand(&mut self, random_provider: &dyn RandomProvider) {
-        self.hand = self
-            .deck
-            .pick_n_unique_linear(self.hand_size as usize, random_provider)
-            .iter()
-            .map(|v| **v)
-            .collect();
+    pub fn refresh_hand(&mut self, random_provider: &dyn RandomProvider) {
+        let cards_to_draw = if self.hand_size >= self.hand.len() {
+            self.hand_size - self.hand.len()
+        } else {
+            0
+        };
+
+        if self.deck.len() < cards_to_draw {
+            self.deck.extend(self.discard.shuffle(random_provider));
+            self.discard.clear();
+        }
+
+        self.hand
+            .extend(self.deck.drain(..min(self.deck.len(), cards_to_draw)));
     }
 
     pub fn get_default_turn_actions(&self) -> Option<u64> {

@@ -14,6 +14,7 @@ pub trait RandomProvider {
 pub trait RandomPicker<T> {
     fn pick_linear(&self, random_provider: &dyn RandomProvider) -> Option<&T>;
     fn pick_n_unique_linear(&self, count: usize, random_provider: &dyn RandomProvider) -> Vec<&T>;
+    fn shuffle(&self, random_provider: &dyn RandomProvider) -> Vec<&T>;
 }
 
 impl<T> RandomPicker<T> for Vec<T> {
@@ -38,6 +39,10 @@ impl<T> RandomPicker<T> for Vec<T> {
             }
         }
         result
+    }
+
+    fn shuffle(&self, random_provider: &dyn RandomProvider) -> Vec<&T> {
+        self.pick_n_unique_linear(self.len(), random_provider)
     }
 }
 

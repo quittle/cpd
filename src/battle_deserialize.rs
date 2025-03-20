@@ -85,6 +85,7 @@ impl Battle {
                                 .iter()
                                 .map(|card_id| CardId::new(*card_id))
                                 .collect(),
+                            discard: vec![],
                             health: Health::new(member.base_health),
                             max_health: Health::new(
                                 member.max_health.unwrap_or(member.base_health),

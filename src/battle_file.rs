@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 pub type LifeNumber = u64;
 pub type CardId = usize;
 pub type EffectId = usize;
-pub type HandSize = u8;
+pub type HandSize = usize;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]

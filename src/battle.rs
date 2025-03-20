@@ -260,7 +260,7 @@ impl Battle {
         let turns = self.build_turns();
         for turn in turns {
             let character = self.characters.get_mut(&turn.character).unwrap();
-            character.reset_hand(self.random_provider.as_ref());
+            character.refresh_hand(self.random_provider.as_ref());
             character.remaining_actions = character
                 .get_default_turn_actions()
                 .unwrap_or(self.default_turn_actions);
