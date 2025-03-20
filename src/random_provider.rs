@@ -161,4 +161,14 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_shuffle() {
+        let random = DefaultRandomProvider::default();
+
+        let values: Vec<u8> = (1..=10).collect();
+
+        let new_values = values.shuffle(&random);
+        assert_eq!(new_values.len(), values.len());
+    }
 }

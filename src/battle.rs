@@ -247,6 +247,11 @@ impl Battle {
                 // Remove card from hand
                 let hand = &mut self.characters.get_mut(actor).unwrap().hand;
                 hand.remove(hand.iter().position(|id| id == &card_id).unwrap());
+                self.characters
+                    .get_mut(actor)
+                    .unwrap()
+                    .discard
+                    .push(card_id);
 
                 true
             }
