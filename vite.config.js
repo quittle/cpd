@@ -7,7 +7,11 @@ const isDev = process.env.NODE_ENV === "development";
 const isProd = !isDev;
 
 export default defineConfig({
-    plugins: [react({ minify: isProd })],
+    plugins: [
+        react({
+            minify: isProd,
+        }),
+    ],
     build: {
         minify: isProd ? "esbuild" : false,
         sourcemap: true,

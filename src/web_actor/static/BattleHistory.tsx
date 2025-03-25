@@ -25,10 +25,10 @@ export default function BattleHistory(props: {
   history: BattleHistoryEntry[];
 }) {
   return (
-    <ol>
-      {props.history.map((entry, index) => (
-        <li key={index}>{entry.map(convert)}</li>
-      ))}
+    <ol className="battle-history" reversed={true}>
+      {props.history
+        .map((entry, index) => <li key={index}>{entry.map(convert)}</li>)
+        .toReversed()}
     </ol>
   );
 }

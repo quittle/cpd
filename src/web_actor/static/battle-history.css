@@ -1,0 +1,19 @@
+.battle-history {
+    height: 10em;
+    overflow: auto;
+
+    li {
+        animation: battle-history-appear 1s;
+    }
+}
+
+@keyframes battle-history-appear {
+    0% {
+        opacity: 0;
+        background: yellow;
+    }
+    100% {
+        opacity: 1;
+        background: transparent;
+    }
+}
