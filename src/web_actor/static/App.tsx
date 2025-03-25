@@ -109,6 +109,9 @@ export default function App() {
                         await defaultAction();
                       }
                     }}
+                    enabled={
+                      battle.characters[characterId].remaining_actions > 0
+                    }
                     hasDefaultAction={defaultAction !== undefined}
                   />
                 </li>

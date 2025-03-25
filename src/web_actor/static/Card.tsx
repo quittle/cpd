@@ -21,6 +21,7 @@ export function isCardEligible(
 
 export default function Card(props: {
   card: Card;
+  enabled: boolean;
   onDragStart: () => void;
   onDragEnd: () => void;
   onClick: () => void;
@@ -29,15 +30,20 @@ export default function Card(props: {
   return (
     <button
       className="card"
-      draggable={true}
+      draggable={props.enabled}
       onDragStart={(e) => {
         e.dataTransfer.setData("text/plain", String(props.card.id));
         props.onDragStart();
       }}
       onClick={props.onClick}
       onDragEnd={props.onDragEnd}
+      disabled={!props.enabled}
       style={{
-        cursor: props.hasDefaultAction ? "pointer" : "grab",
+        cursor: props.enabled
+          ? props.hasDefaultAction
+            ? "pointer"
+            : "grab"
+          : "not-allowed",
       }}
     >
       <b className="card-header">{props.card.name}</b>
