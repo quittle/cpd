@@ -1,6 +1,12 @@
 .character {
   background: #ededed;
   padding: 1em;
+  &:not(:has(.character-end-turn)) {
+    width: 10em;
+    h3 {
+      text-align: center;
+    }
+  }
 }
 
 .character-end-turn {

@@ -6,6 +6,7 @@
 #characters {
   display: flex;
   gap: 4em;
+  margin-bottom: 2em;
 }
 
 #cards {

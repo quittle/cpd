@@ -17,6 +17,7 @@
 
 .card-range {
   text-align: right;
+  margin-block-end: 0;
 
   &::after {
     content: "🏹";
