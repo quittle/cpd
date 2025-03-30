@@ -4,7 +4,7 @@ set -eu
 set -o pipefail
 
 npm ci
-npm run lint
+npm run check-all
 
 cargo fmt --all
 cargo build --all

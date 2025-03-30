@@ -9,6 +9,7 @@
         "format": "prettier --check ./src/web_actor/static",
         "format-fix": "prettier --write ./src/web_actor/static",
         "type-check": "tsc --noEmit",
+        "check-all": "npm run lint && npm run format && npm run type-check",
         "build-server": "NODE_ENV=development vite build --config=vite.config.js --watch ./src/web_actor/static"
     },
     "devDependencies": {
