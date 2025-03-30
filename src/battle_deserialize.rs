@@ -24,7 +24,7 @@ impl Battle {
 
         let mut board = Board::new(battle.board.width, battle.board.height);
 
-        for cell in &battle.board.cells {
+        for cell in &battle.board.cells.unwrap_or_default() {
             match cell {
                 battle_file::Cell::Card {
                     card,

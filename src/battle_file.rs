@@ -86,7 +86,7 @@ pub enum Cell {
 pub struct Board {
     pub width: usize,
     pub height: usize,
-    pub cells: Vec<Cell>,
+    pub cells: Option<Vec<Cell>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
