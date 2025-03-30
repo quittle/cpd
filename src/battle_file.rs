@@ -83,9 +83,16 @@ pub enum Cell {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
+pub struct BoardBackground {
+    pub image: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(deny_unknown_fields)]
 pub struct Board {
     pub width: usize,
     pub height: usize,
+    pub background: Option<BoardBackground>,
     pub cells: Option<Vec<Cell>>,
 }
 

@@ -13,6 +13,9 @@
         }
     ],
     "board": {
+        "background": {
+            "image": "ships.png"
+        },
         "width": 6,
         "height": 6,
         "cells": [
@@ -121,7 +124,7 @@
                     "image": "long-neck.png",
                     "base_health": 5,
                     "cards": [0, 2],
-                    "location": [2, 2]
+                    "location": [1, 2]
                 },
                 {
                     "name": "Captain Hook",
@@ -129,7 +132,7 @@
                     "image": "pirate.png",
                     "base_health": 5,
                     "cards": [0, 1],
-                    "location": [2, 3]
+                    "location": [1, 1]
                 }
             ]
         },

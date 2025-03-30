@@ -68,6 +68,10 @@ impl Battle {
             introduction: battle.introduction,
             random_provider,
             default_turn_actions: 1,
+            background_image: battle
+                .board
+                .background
+                .and_then(|background| background.image),
             characters: battle
                 .teams
                 .iter()

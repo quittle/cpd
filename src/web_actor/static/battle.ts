@@ -91,6 +91,7 @@ export interface Battle {
   round: number;
   cards: Record<string, Card>;
   board: Board;
+  background_image: string | null;
 }
 
 export interface BattleState {

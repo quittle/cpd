@@ -40,6 +40,7 @@ pub struct Battle {
     #[serde(skip)]
     pub asset_directory: Option<PathBuf>,
     pub board: Board,
+    pub background_image: Option<String>,
 }
 
 unsafe impl Sync for Battle {}

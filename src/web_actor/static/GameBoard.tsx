@@ -17,8 +17,11 @@ export function GameBoard(props: {
   const battle = props.battleState.battle;
   const [selectedSquare, setSelectedSquare] = useState<Coordinate>();
 
+  const backgroundImage = battle.background_image
+    ? `url(${assetPath(battle.background_image)})`
+    : undefined;
   return (
-    <table className="game-board">
+    <table className="game-board" style={{ backgroundImage }}>
       <tbody>
         {battle.board.grid.members.map((row, y) => (
           <tr key={y}>
