@@ -24,6 +24,17 @@ impl Battle {
 
         let mut board = Board::new(battle.board.width, battle.board.height);
 
+        for cell in &battle.board.cells {
+            match cell {
+                battle_file::Cell::Card {
+                    card,
+                    location: (x, y),
+                } => {
+                    board.grid.set(*x, *y, BoardItem::Card(CardId::new(*card)));
+                }
+            }
+        }
+
         let max_team_size = battle
             .teams
             .iter()

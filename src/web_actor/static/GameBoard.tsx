@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { BattleState, CardId, Character } from "./battle";
+import {
+  BattleState,
+  CardId,
+  Character,
+  isBoardItemCard,
+  isBoardItemCharacter,
+} from "./battle";
 import { assetPath, Coordinate, isAdjacent } from "./utils";
 import { move, takeAction } from "./state";
 import { isCardEligible } from "./Card";
@@ -16,25 +22,28 @@ export function GameBoard(props: {
       <tbody>
         {battle.board.grid.members.map((row, y) => (
           <tr key={y}>
-            {row.map((col, x) => {
+            {row.map((cell, x) => {
               let image: string | undefined;
               let character: Character | undefined;
-              if (col?.Character !== undefined) {
-                character = battle.characters[col.Character];
+              let isPlayer;
+              if (isBoardItemCharacter(cell)) {
+                character = battle.characters[cell.Character];
                 if (character.image !== null) {
                   image = `url(${assetPath(character.image)})`;
                 }
                 if (character.health == 0) {
                   image = `url(${assetPath("skull.png")})`;
                 }
+                isPlayer = props.battleState.character_id === cell.Character;
+              } else if (isBoardItemCard(cell)) {
+                image = `url(${assetPath("card.png")})`;
+                isPlayer = false;
               }
               const curLocation: Coordinate = { x, y };
               const isSelectedSquare =
                 selectedSquare &&
                 selectedSquare.x === x &&
                 selectedSquare.y === y;
-              const isPlayer =
-                props.battleState.character_id === col?.Character;
 
               // Only ineligible if there is actively a card being dragged and that card isn't eligible.
               const isIneligible =
@@ -84,9 +93,10 @@ export function GameBoard(props: {
                           battle.board.grid.members[selectedSquare.y][
                             selectedSquare.x
                           ];
-                        if (item?.Character !== undefined) {
+                        if (isBoardItemCharacter(item)) {
+                          console.log("Trying to move");
                           setSelectedSquare(undefined);
-                          await move(item?.Character, curLocation);
+                          await move(item.Character, curLocation);
                         }
                       }
                     }

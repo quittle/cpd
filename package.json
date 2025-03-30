@@ -8,6 +8,7 @@
         "lint-fix": "eslint --fix ./src/web_actor/static",
         "format": "prettier --check ./src/web_actor/static",
         "format-fix": "prettier --write ./src/web_actor/static",
+        "type-check": "tsc --noEmit",
         "build-server": "NODE_ENV=development vite build --config=vite.config.js --watch ./src/web_actor/static"
     },
     "devDependencies": {

@@ -72,10 +72,21 @@ pub enum StoryCardEntry {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged, rename_all = "snake_case")]
+#[serde(deny_unknown_fields)]
+pub enum Cell {
+    Card {
+        card: CardId,
+        location: (usize, usize),
+    },
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Board {
     pub width: usize,
     pub height: usize,
+    pub cells: Vec<Cell>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -198,7 +209,16 @@ mod tests {
                 { "h1": "Heading" },
                 { "p": "Paragraph" }
             ],
-            "board": { "width": 1, "height": 1 },
+            "board": {
+                "width": 1,
+                "height": 1,
+                "cells": [
+                    {
+                        "card": 0,
+                        "location": [0, 0]
+                    }
+                ]
+            },
             "effects": [
                 {
                     "id": 0,

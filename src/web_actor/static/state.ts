@@ -1,5 +1,5 @@
-import { CardId, CharacterId } from "./battle.ts";
-import { Coordinate } from "./utils.ts";
+import { CardId, CharacterId } from "./battle";
+import { Coordinate } from "./utils";
 
 export async function takeAction(cardId: CardId, targetId: CharacterId) {
   await fetch("/act", {

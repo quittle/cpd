@@ -14,7 +14,13 @@
     ],
     "board": {
         "width": 6,
-        "height": 6
+        "height": 6,
+        "cells": [
+            {
+                "location": [4, 4],
+                "card": 4
+            }
+        ]
     },
     "cards": [
         {

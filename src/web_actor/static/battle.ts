@@ -53,7 +53,27 @@ export type StoryCardEntry = { h1: string } | { p: string };
 
 export type StoryCard = StoryCardEntry[];
 
-export type BoardItem = { Character: CharacterId };
+export type BoardItemCharacter = {
+  Character: CharacterId;
+};
+
+export type BoardItemCard = {
+  Card: CardId;
+};
+
+export function isBoardItemCharacter(
+  item: BoardItem | null | undefined,
+): item is BoardItemCharacter {
+  return item !== null && "Character" in item;
+}
+
+export function isBoardItemCard(
+  item: BoardItem | null | undefined,
+): item is BoardItemCard {
+  return item !== null && "Card" in item;
+}
+
+export type BoardItem = BoardItemCharacter | BoardItemCard;
 
 export interface Board {
   grid: {
