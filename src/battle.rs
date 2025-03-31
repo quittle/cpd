@@ -377,6 +377,14 @@ impl Battle {
                                 Trigger::Death,
                             );
                         }
+
+                        // Remove the character from the board
+                        if let Some((x, y)) = self
+                            .board
+                            .find(&BoardItem::Character(attacked_character_id))
+                        {
+                            self.board.grid.clear(x, y);
+                        }
                     }
                 }
             }
