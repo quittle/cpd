@@ -184,7 +184,7 @@ impl Battle {
                     if location.is_adjacent(&GridLocation { x, y })
                         && !matches!(
                             self.board.grid.get(location.x, location.y),
-                            Some(BoardItem::Character(_))
+                            Some(BoardItem::Character(_) | BoardItem::Inert)
                         )
                     {
                         self.characters.get_mut(&target).unwrap().movement -= 1;
