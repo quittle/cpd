@@ -5,6 +5,7 @@ import {
   Character,
   isBoardItemCard,
   isBoardItemCharacter,
+  isBoardItemInert,
 } from "./battle";
 import { assetPath, Coordinate, isAdjacent } from "./utils";
 import { move, takeAction } from "./state";
@@ -40,6 +41,8 @@ export function GameBoard(props: {
                 isPlayer = props.battleState.character_id === cell.Character;
               } else if (isBoardItemCard(cell)) {
                 image = `url(${assetPath("card.png")})`;
+                isPlayer = false;
+              } else if (isBoardItemInert(cell)) {
                 isPlayer = false;
               }
               const curLocation: Coordinate = { x, y };

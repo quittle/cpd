@@ -22,6 +22,66 @@
             {
                 "location": [4, 4],
                 "card": 4
+            },
+            {
+                "location": [1, 0],
+                "inert": true
+            },
+            {
+                "location": [0, 1],
+                "inert": true
+            },
+            {
+                "location": [0, 2],
+                "inert": true
+            },
+            {
+                "location": [0, 3],
+                "inert": true
+            },
+            {
+                "location": [0, 4],
+                "inert": true
+            },
+            {
+                "location": [1, 5],
+                "inert": true
+            },
+            {
+                "location": [2, 4],
+                "inert": true
+            },
+            {
+                "location": [3, 4],
+                "inert": true
+            },
+            {
+                "location": [4, 5],
+                "inert": true
+            },
+            {
+                "location": [5, 4],
+                "inert": true
+            },
+            {
+                "location": [5, 3],
+                "inert": true
+            },
+            {
+                "location": [4, 2],
+                "inert": true
+            },
+            {
+                "location": [3, 2],
+                "inert": true
+            },
+            {
+                "location": [2, 2],
+                "inert": true
+            },
+            {
+                "location": [2, 1],
+                "inert": true
             }
         ]
     },

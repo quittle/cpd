@@ -30,7 +30,18 @@ impl Battle {
                     card,
                     location: (x, y),
                 } => {
+                    if !board.grid.is_valid(*x, *y) {
+                        return Err(format!("Invalid card position: {x}, {y}"));
+                    }
                     board.grid.set(*x, *y, BoardItem::Card(CardId::new(*card)));
+                }
+                battle_file::Cell::Inert {
+                    location: (x, y), ..
+                } => {
+                    if !board.grid.is_valid(*x, *y) {
+                        return Err(format!("Invalid inert position: {x}, {y}"));
+                    }
+                    board.grid.set(*x, *y, BoardItem::Inert);
                 }
             }
         }

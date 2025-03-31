@@ -6,6 +6,7 @@ use crate::{CardId, CharacterId, Grid, GridDimension, GridLocation};
 pub enum BoardItem {
     Character(CharacterId),
     Card(CardId),
+    Inert,
 }
 
 #[derive(Serialize)]
@@ -60,6 +61,7 @@ impl Board {
                 GridLocation { x: bx, y: by },
                 |item| match item {
                     BoardItem::Card(_) => true,
+                    BoardItem::Inert => false,
                     character @ BoardItem::Character(_) => &b == character,
                 },
             )

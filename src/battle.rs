@@ -198,6 +198,9 @@ impl Battle {
                         );
                         match prev_contents {
                             None => {}
+                            Some(BoardItem::Inert) => {
+                                panic!("Inert should not be in the way of movement");
+                            }
                             Some(BoardItem::Card(card_id)) => {
                                 self.characters.get_mut(&target).unwrap().hand.push(card_id);
                             }
@@ -431,7 +434,7 @@ impl Battle {
 mod tests {
     use futures::executor::block_on;
 
-    use crate::{Battle, DefaultRandomProvider};
+    use crate::{Battle, BoardItem, CardId, DefaultRandomProvider};
 
     #[tokio::test]
     async fn test_deserialize() -> Result<(), String> {
@@ -439,7 +442,20 @@ mod tests {
             "title": "Example Game",
             "description": "Example Description",
             "default_hand_size": 2,
-            "board": { "width": 2, "height": 2 },
+            "board": {
+                "width": 3,
+                "height": 3,
+                "cells": [
+                    {
+                        "location": [2, 0],
+                        "card": 0
+                    },
+                    {
+                        "location": [2, 1],
+                        "inert": true
+                    }
+                ]
+            },
             "cards": [
                 {
                     "id": 0,
@@ -535,6 +551,12 @@ mod tests {
             battle.characters[battle.actors[2].1.get_character_id()].name,
             "Member B1"
         );
+
+        assert_eq!(
+            battle.board.grid.get(2, 0),
+            Some(&BoardItem::Card(CardId::new(0)))
+        );
+        assert_eq!(battle.board.grid.get(2, 1), Some(&BoardItem::Inert));
 
         block_on(battle.run_to_completion()).unwrap();
         Ok(())

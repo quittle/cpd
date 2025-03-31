@@ -79,6 +79,10 @@ pub enum Cell {
         card: CardId,
         location: (usize, usize),
     },
+    Inert {
+        inert: bool,
+        location: (usize, usize),
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -223,6 +227,10 @@ mod tests {
                     {
                         "card": 0,
                         "location": [0, 0]
+                    },
+                    {
+                        "inert": true,
+                        "location": [0, 1]
                     }
                 ]
             },

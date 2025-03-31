@@ -61,19 +61,27 @@ export type BoardItemCard = {
   Card: CardId;
 };
 
+export type BoardItemInert = "Inert";
+
 export function isBoardItemCharacter(
   item: BoardItem | null | undefined,
 ): item is BoardItemCharacter {
-  return item !== null && "Character" in item;
+  return item instanceof Object && "Character" in item;
 }
 
 export function isBoardItemCard(
   item: BoardItem | null | undefined,
 ): item is BoardItemCard {
-  return item !== null && "Card" in item;
+  return item instanceof Object && "Card" in item;
 }
 
-export type BoardItem = BoardItemCharacter | BoardItemCard;
+export function isBoardItemInert(
+  item: BoardItem | null | undefined,
+): item is BoardItemInert {
+  return item === "Inert";
+}
+
+export type BoardItem = BoardItemCharacter | BoardItemCard | BoardItemInert;
 
 export interface Board {
   grid: {
