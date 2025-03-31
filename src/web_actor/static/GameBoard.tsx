@@ -30,6 +30,7 @@ export function GameBoard(props: {
               let image: string | undefined;
               let character: Character | undefined;
               let isPlayer;
+              let isInert = false;
               if (isBoardItemCharacter(cell)) {
                 character = battle.characters[cell.Character];
                 if (character.image !== null) {
@@ -44,6 +45,7 @@ export function GameBoard(props: {
                 isPlayer = false;
               } else if (isBoardItemInert(cell)) {
                 isPlayer = false;
+                isInert = true;
               }
               const curLocation: Coordinate = { x, y };
               const isSelectedSquare =
@@ -61,6 +63,7 @@ export function GameBoard(props: {
                 <td
                   key={x}
                   style={{
+                    border: isInert ? 0 : undefined,
                     borderColor: isSelectedSquare ? "red" : "black",
                     backgroundImage: image,
                     opacity: isIneligible ? 0.5 : 1,

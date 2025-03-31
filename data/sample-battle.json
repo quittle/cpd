@@ -28,59 +28,52 @@
                 "inert": true
             },
             {
-                "location": [0, 1],
+                "location": [
+                    [0, 0],
+                    [0, 5]
+                ],
                 "inert": true
             },
             {
-                "location": [0, 2],
+                "location": [
+                    [1, 0],
+                    [5, 0]
+                ],
                 "inert": true
             },
             {
-                "location": [0, 3],
+                "location": [
+                    [2, 1],
+                    [5, 1]
+                ],
                 "inert": true
             },
             {
-                "location": [0, 4],
+                "location": [
+                    [2, 2],
+                    [5, 2]
+                ],
                 "inert": true
             },
             {
-                "location": [1, 5],
+                "location": [
+                    [5, 3],
+                    [5, 4]
+                ],
                 "inert": true
             },
             {
-                "location": [2, 4],
+                "location": [
+                    [2, 4],
+                    [3, 4]
+                ],
                 "inert": true
             },
             {
-                "location": [3, 4],
-                "inert": true
-            },
-            {
-                "location": [4, 5],
-                "inert": true
-            },
-            {
-                "location": [5, 4],
-                "inert": true
-            },
-            {
-                "location": [5, 3],
-                "inert": true
-            },
-            {
-                "location": [4, 2],
-                "inert": true
-            },
-            {
-                "location": [3, 2],
-                "inert": true
-            },
-            {
-                "location": [2, 2],
-                "inert": true
-            },
-            {
-                "location": [2, 1],
+                "location": [
+                    [1, 5],
+                    [5, 5]
+                ],
                 "inert": true
             }
         ]

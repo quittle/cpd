@@ -72,16 +72,67 @@ pub enum StoryCardEntry {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged)]
+#[serde(deny_unknown_fields)]
+pub enum LocationRange {
+    Point(usize, usize),
+    Range((usize, usize), (usize, usize)),
+}
+
+impl LocationRange {
+    pub fn iter(&self) -> LocationRangeIter {
+        match self {
+            LocationRange::Point(x, y) => LocationRangeIter {
+                start: (*x, *y),
+                end: (*x, *y),
+                current: None,
+            },
+            LocationRange::Range((start_x, start_y), (end_x, end_y)) => LocationRangeIter {
+                start: (*start_x, *start_y),
+                end: (*end_x, *end_y),
+                current: None,
+            },
+        }
+    }
+}
+
+pub struct LocationRangeIter {
+    start: (usize, usize),
+    end: (usize, usize),
+    current: Option<(usize, usize)>,
+}
+
+impl Iterator for LocationRangeIter {
+    type Item = (usize, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(cur @ (cur_x, cur_y)) = self.current {
+            if cur == self.end {
+                return None;
+            }
+            if cur_x < self.end.0 {
+                self.current = Some((cur_x + 1, cur_y));
+            } else {
+                self.current = Some((self.start.0, cur_y + 1));
+            }
+        } else {
+            self.current = Some(self.start);
+        }
+        self.current
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged, rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
 pub enum Cell {
     Card {
         card: CardId,
-        location: (usize, usize),
+        location: LocationRange,
     },
     Inert {
         inert: bool,
-        location: (usize, usize),
+        location: LocationRange,
     },
 }
 

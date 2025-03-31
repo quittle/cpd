@@ -26,22 +26,21 @@ impl Battle {
 
         for cell in &battle.board.cells.unwrap_or_default() {
             match cell {
-                battle_file::Cell::Card {
-                    card,
-                    location: (x, y),
-                } => {
-                    if !board.grid.is_valid(*x, *y) {
-                        return Err(format!("Invalid card position: {x}, {y}"));
+                battle_file::Cell::Card { card, location } => {
+                    for (x, y) in location.iter() {
+                        if !board.grid.is_valid(x, y) {
+                            return Err(format!("Invalid card position: {x}, {y}"));
+                        }
+                        board.grid.set(x, y, BoardItem::Card(CardId::new(*card)));
                     }
-                    board.grid.set(*x, *y, BoardItem::Card(CardId::new(*card)));
                 }
-                battle_file::Cell::Inert {
-                    location: (x, y), ..
-                } => {
-                    if !board.grid.is_valid(*x, *y) {
-                        return Err(format!("Invalid inert position: {x}, {y}"));
+                battle_file::Cell::Inert { location, .. } => {
+                    for (x, y) in location.iter() {
+                        if !board.grid.is_valid(x, y) {
+                            return Err(format!("Invalid inert position: {x}, {y}"));
+                        }
+                        board.grid.set(x, y, BoardItem::Inert);
                     }
-                    board.grid.set(*x, *y, BoardItem::Inert);
                 }
             }
         }
