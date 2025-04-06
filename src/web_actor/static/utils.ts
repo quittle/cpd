@@ -8,7 +8,12 @@ import {
 } from "./battle";
 
 export function getActionTarget(action: CardAction): ActionTarget {
-  return action["Damage"]?.target ?? action["Heal"]?.target;
+  return (
+    action["Damage"]?.target ??
+    action["Heal"]?.target ??
+    action["Effect"]?.target ??
+    action["RemoveEffect"]?.target
+  );
 }
 
 export function getCardTarget(card: Card): ActionTarget {

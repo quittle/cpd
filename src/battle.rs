@@ -126,18 +126,14 @@ impl Battle {
         amount: &U64Range,
     ) -> Vec<(CharacterId, u64)> {
         let range = area.resolve(self.random_provider.as_ref());
-        let (attack_x, attack_y) = self.board.find(&BoardItem::Character(target_id)).unwrap();
-
-        self.get_characters_in_range(
-            GridLocation {
-                x: attack_x,
-                y: attack_y,
-            },
-            range,
-        )
-        .iter()
-        .map(|id| (*id, amount.resolve(self.random_provider.as_ref())))
-        .collect()
+        if let Some((x, y)) = self.board.find(&BoardItem::Character(target_id)) {
+            self.get_characters_in_range(GridLocation { x, y }, range)
+                .iter()
+                .map(|id| (*id, amount.resolve(self.random_provider.as_ref())))
+                .collect()
+        } else {
+            vec![]
+        }
     }
 
     fn is_in_range(
@@ -284,16 +280,25 @@ impl Battle {
             .push(battle_markup![format!("--- Round {}", self.round)]);
         let turns = self.build_turns();
         for turn in turns {
+            if self.characters[&turn.character].is_dead() {
+                continue;
+            }
+            for effect_id in self.characters[&turn.character].effects.clone() {
+                self.try_run_effect(
+                    turn.character,
+                    turn.character,
+                    effect_id,
+                    Trigger::TurnStart,
+                );
+            }
+
             let character = self.characters.get_mut(&turn.character).unwrap();
+
             character.refresh_hand(self.random_provider.as_ref());
             character.remaining_actions = character
                 .get_default_turn_actions()
                 .unwrap_or(self.default_turn_actions);
             character.movement = character.default_movement;
-
-            if character.is_dead() {
-                continue;
-            }
 
             while self.characters[&turn.character].remaining_actions > 0
                 || self.characters[&turn.character].movement > 0
@@ -413,9 +418,33 @@ impl Battle {
                 history_entry.extend(battle_markup![format!("Moved {} spaces. ", value)]);
                 target_character.movement += value;
             }
+            CardAction::Effect { effect, chance, .. } => {
+                if chance.resolve(self.random_provider.as_ref()) {
+                    history_entry.extend(battle_markup![
+                        @id(&target_character.name),
+                        " got ",
+                        @id(&self.effects[effect].name),
+                    ]);
+                    target_character.effects.push(*effect);
+                }
+            }
+            CardAction::RemoveEffect { effect, chance, .. } => {
+                if chance.resolve(self.random_provider.as_ref())
+                    && target_character.effects.contains(effect)
+                {
+                    history_entry.extend(battle_markup![
+                        @id(&target_character.name),
+                        " lost ",
+                        @id(&self.effects[effect].name),
+                    ]);
+                    target_character.effects.retain(|e| e != effect);
+                }
+            }
         }
 
-        self.history.push(history_entry);
+        if !history_entry.is_empty() {
+            self.history.push(history_entry);
+        }
 
         true
     }

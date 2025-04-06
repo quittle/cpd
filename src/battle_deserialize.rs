@@ -221,7 +221,30 @@ fn deserialize_card_action(card_action: &battle_file::CardAction) -> crate::Card
             target: deserialize_target(target),
             amount: normalize_maybe_u64_range(amount),
         },
+        battle_file::CardAction::Effect {
+            target,
+            effect,
+            chance,
+        } => crate::CardAction::Effect {
+            target: deserialize_target(target),
+            effect: EffectId::new(*effect),
+            chance: deserialize_chance(chance),
+        },
+        battle_file::CardAction::RemoveEffect {
+            target,
+            effect,
+            chance,
+        } => crate::CardAction::RemoveEffect {
+            target: deserialize_target(target),
+            effect: EffectId::new(*effect),
+            chance: deserialize_chance(chance),
+        },
     }
+}
+
+fn deserialize_chance(chance: &Option<f64>) -> crate::Chance {
+    let real_chance = chance.unwrap_or(1f64);
+    crate::Chance::new(((u32::MAX as f64) * real_chance) as u32)
 }
 
 fn deserialize_effect(effect: &battle_file::Effect) -> crate::Effect {
@@ -230,7 +253,11 @@ fn deserialize_effect(effect: &battle_file::Effect) -> crate::Effect {
         name: effect.name.clone(),
         description: effect.description.clone(),
         actions: effect.actions.iter().map(deserialize_card_action).collect(),
-        triggers: effect.triggers.iter().map(deserailize_trigger).collect(),
+        triggers: effect
+            .triggers
+            .as_ref()
+            .map(|triggers| triggers.iter().map(deserailize_trigger).collect())
+            .unwrap_or_default(),
     }
 }
 
@@ -256,5 +283,19 @@ fn deserialize_target(target: &battle_file::Target) -> crate::Target {
 fn deserailize_trigger(trigger: &battle_file::Trigger) -> crate::Trigger {
     match trigger {
         battle_file::Trigger::Death => crate::Trigger::Death,
+        battle_file::Trigger::TurnStart => crate::Trigger::TurnStart,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{Chance, battle_deserialize::deserialize_chance};
+
+    #[test]
+    fn test_deserialize_chance() {
+        assert_eq!(deserialize_chance(&None), Chance::new(u32::MAX));
+        assert_eq!(deserialize_chance(&Some(1f64)), Chance::new(u32::MAX));
+        assert_eq!(deserialize_chance(&Some(0f64)), Chance::new(0));
+        assert_eq!(deserialize_chance(&Some(0.5)), Chance::new(u32::MAX / 2));
     }
 }

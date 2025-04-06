@@ -20,9 +20,15 @@ pub struct Battle {
     pub teams: Vec<Team>,
 }
 
+fn map_serde_error(source: &str, err: serde_json::Error) -> String {
+    let line = source.lines().nth(err.line() - 1).unwrap_or("");
+    err.to_string() + "\\n" + line
+}
+
 impl Battle {
     pub fn parse_from_str(data: &str) -> Result<Self, String> {
-        let battle: Battle = serde_json::from_str::<Battle>(data).map_err(|err| err.to_string())?;
+        let battle: Battle =
+            serde_json::from_str::<Battle>(data).map_err(|err| map_serde_error(data, err))?;
 
         for (index, card) in battle.cards.iter().enumerate() {
             if card.id != index {
@@ -35,6 +41,8 @@ impl Battle {
                     CardAction::Heal { target, .. } => target,
                     CardAction::GainAction { target, .. } => target,
                     CardAction::Move { target, .. } => target,
+                    CardAction::Effect { target, .. } => target,
+                    CardAction::RemoveEffect { target, .. } => target,
                 };
                 if target != &Target::Me && card.range.is_none() {
                     return Err(format!(
@@ -209,7 +217,7 @@ pub struct Effect {
     pub id: EffectId,
     pub name: String,
     pub description: String,
-    pub triggers: Vec<Trigger>,
+    pub triggers: Option<Vec<Trigger>>,
     pub actions: Vec<CardAction>,
 }
 
@@ -218,6 +226,7 @@ pub struct Effect {
 #[serde(rename_all = "snake_case")]
 pub enum Trigger {
     Death,
+    TurnStart,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
@@ -241,6 +250,16 @@ pub enum CardAction {
     Move {
         target: Target,
         amount: MaybeU64Range,
+    },
+    Effect {
+        target: Target,
+        effect: EffectId,
+        chance: Option<f64>,
+    },
+    RemoveEffect {
+        target: Target,
+        effect: EffectId,
+        chance: Option<f64>,
     },
 }
 

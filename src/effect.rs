@@ -7,6 +7,7 @@ DeclareWrappedType!(EffectId, id, battle_file::EffectId);
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub enum Trigger {
     Death,
+    TurnStart,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -38,7 +38,9 @@ export enum ActionTarget {
 
 export type CardAction =
   | { Damage: { target: ActionTarget; amount: number } }
-  | { Heal: { target: ActionTarget; amount: number } };
+  | { Heal: { target: ActionTarget; amount: number } }
+  | { Effect: { target: ActionTarget; amount: number; change: number } }
+  | { RemoveEffect: { target: ActionTarget; amount: number; change: number } };
 
 export interface Card {
   id: CardId;

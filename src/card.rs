@@ -1,10 +1,18 @@
 use serde::Serialize;
 
-use crate::{DeclareWrappedType, RandomProvider, battle_file};
+use crate::{DeclareWrappedType, EffectId, RandomProvider, battle_file};
 
 DeclareWrappedType!(CardId, id, battle_file::CardId);
 
 pub type LifeNumber = battle_file::LifeNumber;
+
+DeclareWrappedType!(Chance, chance, u32);
+
+impl Chance {
+    pub fn resolve(&self, random_provider: &dyn RandomProvider) -> bool {
+        random_provider.pick_linear_u32(0, u32::MAX) <= self.chance
+    }
+}
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct U64Range(pub u64, pub u64);
@@ -49,6 +57,16 @@ pub enum CardAction {
         target: Target,
         amount: U64Range,
     },
+    Effect {
+        target: Target,
+        effect: EffectId,
+        chance: Chance,
+    },
+    RemoveEffect {
+        target: Target,
+        effect: EffectId,
+        chance: Chance,
+    },
 }
 
 impl CardAction {
@@ -58,6 +76,8 @@ impl CardAction {
             Self::Heal { target, .. } => target,
             Self::GainAction { target, .. } => target,
             Self::Move { target, .. } => target,
+            Self::Effect { target, .. } => target,
+            Self::RemoveEffect { target, .. } => target,
         }
     }
 }
