@@ -252,6 +252,7 @@ fn deserialize_effect(effect: &battle_file::Effect) -> crate::Effect {
         id: crate::EffectId::new(effect.id),
         name: effect.name.clone(),
         description: effect.description.clone(),
+        image: effect.image.clone(),
         actions: effect.actions.iter().map(deserialize_card_action).collect(),
         triggers: effect
             .triggers

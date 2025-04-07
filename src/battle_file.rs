@@ -217,6 +217,7 @@ pub struct Effect {
     pub id: EffectId,
     pub name: String,
     pub description: String,
+    pub image: Option<String>,
     pub triggers: Option<Vec<Trigger>>,
     pub actions: Vec<CardAction>,
 }

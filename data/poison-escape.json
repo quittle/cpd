@@ -11,6 +11,7 @@
             "id": 0,
             "name": "Poison",
             "description": "Deals damage over time",
+            "image": "poison.png",
             "triggers": ["turn_start"],
             "actions": [
                 {

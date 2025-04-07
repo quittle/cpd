@@ -15,6 +15,7 @@ pub struct Effect {
     pub id: EffectId,
     pub name: String,
     pub description: String,
+    pub image: Option<String>,
     pub actions: Vec<CardAction>,
     pub triggers: Vec<Trigger>,
 }
