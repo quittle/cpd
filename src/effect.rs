@@ -5,12 +5,14 @@ use crate::{CardAction, DeclareWrappedType, Target, battle_file};
 DeclareWrappedType!(EffectId, id, battle_file::EffectId);
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub enum Trigger {
     Death,
     TurnStart,
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Effect {
     pub id: EffectId,
     pub name: String,

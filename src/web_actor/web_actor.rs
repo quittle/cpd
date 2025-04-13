@@ -13,6 +13,7 @@ use tokio::sync::{
 };
 
 #[derive(Serialize)]
+#[serde(deny_unknown_fields)]
 struct BattleState<'battle> {
     battle: &'battle Battle,
     character_id: CharacterId,

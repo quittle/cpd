@@ -11,6 +11,7 @@ use std::process::ExitCode;
 DeclareWrappedType!(TeamId, id, u64);
 
 #[derive(Debug, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Team {
     pub id: TeamId,
     pub name: String,
@@ -24,6 +25,7 @@ struct Turn {
 type StoryCard = battle_file::StoryCard;
 
 #[derive(Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Battle {
     #[serde(skip)]
     pub actors: Vec<(TeamId, Box<dyn Actor>)>,

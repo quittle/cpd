@@ -15,6 +15,7 @@ impl Chance {
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct U64Range(pub u64, pub u64);
 
 impl U64Range {
@@ -24,6 +25,7 @@ impl U64Range {
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
+#[serde(deny_unknown_fields)]
 pub enum Target {
     Me,
     Others,
@@ -38,6 +40,7 @@ impl Target {
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize)]
+#[serde(deny_unknown_fields)]
 pub enum CardAction {
     Damage {
         target: Target,
@@ -83,6 +86,7 @@ impl CardAction {
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Card {
     pub id: CardId,
     pub name: String,

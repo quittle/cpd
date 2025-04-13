@@ -12,6 +12,7 @@ type HandSize = usize;
 DeclareWrappedType!(CharacterId, id, usize);
 
 #[derive(Serialize)]
+#[serde(deny_unknown_fields)]
 pub enum CharacterRace {
     Human,
     Machine,
@@ -36,6 +37,7 @@ impl SubAssign<Attack> for Health {
 }
 
 #[derive(Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Character {
     pub id: CharacterId,
     pub name: String,

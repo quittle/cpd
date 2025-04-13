@@ -3,6 +3,7 @@ use serde::Serialize;
 use crate::{CardId, CharacterId, Grid, GridDimension, GridLocation};
 
 #[derive(Serialize, PartialEq, Debug)]
+#[serde(deny_unknown_fields)]
 pub enum BoardItem {
     Character(CharacterId),
     Card(CardId),
@@ -10,6 +11,7 @@ pub enum BoardItem {
 }
 
 #[derive(Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Board {
     pub grid: Grid<BoardItem>,
 }

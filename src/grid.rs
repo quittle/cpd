@@ -5,6 +5,7 @@ use serde::Serialize;
 pub type GridDimension = usize;
 
 #[derive(Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Grid<T> {
     members: Vec<Vec<Option<T>>>,
     width: GridDimension,

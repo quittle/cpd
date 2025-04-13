@@ -72,16 +72,14 @@ impl Battle {
 pub type StoryCard = Vec<StoryCardEntry>;
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub enum StoryCardEntry {
     H1(String),
     P(String),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(untagged)]
-#[serde(deny_unknown_fields)]
+#[serde(untagged, deny_unknown_fields)]
 pub enum LocationRange {
     Point(usize, usize),
     Range((usize, usize), (usize, usize)),
@@ -192,8 +190,7 @@ pub enum Race {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-#[serde(rename_all = "snake_case")]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub enum Target {
     #[serde(alias = "self")]
     Me,
@@ -204,8 +201,7 @@ pub enum Target {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-#[serde(untagged)]
-#[serde(deny_unknown_fields)]
+#[serde(untagged, deny_unknown_fields)]
 pub enum MaybeU64Range {
     Range(u64, u64),
     Absolute(u64),
@@ -223,16 +219,14 @@ pub struct Effect {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-#[serde(deny_unknown_fields)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub enum Trigger {
     Death,
     TurnStart,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-#[serde(tag = "type", rename_all = "snake_case")]
-#[serde(deny_unknown_fields)]
+#[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum CardAction {
     Damage {
         target: Target,

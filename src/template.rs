@@ -11,6 +11,7 @@ pub trait TemplateRenderer<TypeId> {
 }
 
 #[derive(Serialize)]
+#[serde(deny_unknown_fields)]
 pub enum TemplateEntry<TypeId> {
     Text(String),
     Typed(TypeId, String),

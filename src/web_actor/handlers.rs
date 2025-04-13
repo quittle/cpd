@@ -22,6 +22,7 @@ pub struct ServerState {
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ActParams {
     card_id: usize,
     target_id: usize,
@@ -52,6 +53,7 @@ struct MoveDestination {
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 struct MoveParams {
     target_id: usize,
     to: MoveDestination,
