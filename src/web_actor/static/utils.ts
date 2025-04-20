@@ -17,7 +17,7 @@ export function getActionTarget(action: CardAction): ActionTarget {
 }
 
 export function getCardTarget(card: Card): ActionTarget {
-  let defaultTarget = ActionTarget.Me;
+  let defaultTarget: ActionTarget = ActionTarget.Me;
   for (const action of card.actions) {
     const target = getActionTarget(action);
     switch (target) {

@@ -4,10 +4,12 @@ set -eu
 set -o pipefail
 
 npm ci
-npm run check-all
 
 cargo fmt --all
 cargo build --all
+cargo run --bin codegen
 cargo test --all
 cargo clippy --all-features --fix --allow-dirty --allow-no-vcs
 cargo doc
+
+npm run check-all

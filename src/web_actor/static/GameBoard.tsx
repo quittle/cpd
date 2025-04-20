@@ -32,14 +32,14 @@ export function GameBoard(props: {
               let isPlayer;
               let isInert = false;
               if (isBoardItemCharacter(cell)) {
-                character = battle.characters[cell.Character];
+                character = battle.characters[cell.id];
                 if (character.image !== null) {
                   image = `url(${assetPath(character.image)})`;
                 }
                 if (character.health == 0) {
                   image = `url(${assetPath("skull.png")})`;
                 }
-                isPlayer = props.battleState.character_id === cell.Character;
+                isPlayer = props.battleState.character_id === cell.id;
               } else if (isBoardItemCard(cell)) {
                 image = `url(${assetPath("card.png")})`;
                 isPlayer = false;
@@ -105,7 +105,7 @@ export function GameBoard(props: {
                         if (isBoardItemCharacter(item)) {
                           console.log("Trying to move");
                           setSelectedSquare(undefined);
-                          await move(item.Character, curLocation);
+                          await move(item.id, curLocation);
                         }
                       }
                     }
