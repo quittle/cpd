@@ -1,8 +1,9 @@
+use schemars::JsonSchema;
 use serde::Serialize;
 
 use crate::{CardId, CharacterId, Grid, GridDimension, GridLocation};
 
-#[derive(Serialize, PartialEq, Debug)]
+#[derive(Serialize, PartialEq, Debug, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub enum BoardItem {
     Character(CharacterId),
@@ -10,7 +11,7 @@ pub enum BoardItem {
     Inert,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Board {
     pub grid: Grid<BoardItem>,

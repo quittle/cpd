@@ -3,6 +3,7 @@ use crate::{
     Character, CharacterId, DeclareWrappedType, Effect, EffectId, GridLocation, Health,
     RandomProvider, Target, Trigger, U64Range, battle_file, battle_markup,
 };
+use schemars::JsonSchema;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -10,7 +11,7 @@ use std::process::ExitCode;
 
 DeclareWrappedType!(TeamId, id, u64);
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Team {
     pub id: TeamId,
@@ -24,7 +25,7 @@ struct Turn {
 
 type StoryCard = battle_file::StoryCard;
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Battle {
     #[serde(skip)]

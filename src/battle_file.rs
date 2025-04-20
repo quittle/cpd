@@ -1,3 +1,4 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 pub type LifeNumber = u64;
@@ -71,7 +72,7 @@ impl Battle {
 
 pub type StoryCard = Vec<StoryCardEntry>;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema)]
 #[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub enum StoryCardEntry {
     H1(String),

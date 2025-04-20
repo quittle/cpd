@@ -3,6 +3,7 @@ use std::{
     ops::{Sub, SubAssign},
 };
 
+use schemars::JsonSchema;
 use serde::Serialize;
 
 use crate::*;
@@ -11,7 +12,7 @@ type HandSize = usize;
 
 DeclareWrappedType!(CharacterId, id, usize);
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub enum CharacterRace {
     Human,
@@ -36,7 +37,7 @@ impl SubAssign<Attack> for Health {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Character {
     pub id: CharacterId,

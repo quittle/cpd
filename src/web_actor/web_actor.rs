@@ -5,6 +5,7 @@ use super::{
 use crate::{ActionResult, Actor, Battle, CharacterId};
 use actix_web_lab::sse;
 use async_trait::async_trait;
+use schemars::JsonSchema;
 use serde::Serialize;
 use std::{path::Path, sync::Arc};
 use tokio::sync::{
@@ -12,9 +13,9 @@ use tokio::sync::{
     mpsc::{Receiver, channel, error::SendError},
 };
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
-struct BattleState<'battle> {
+pub struct BattleState<'battle> {
     battle: &'battle Battle,
     character_id: CharacterId,
 }

@@ -1,6 +1,6 @@
-use serde::Serialize;
-
 use crate::{DeclareWrappedType, EffectId, RandomProvider, battle_file};
+use schemars::JsonSchema;
+use serde::Serialize;
 
 DeclareWrappedType!(CardId, id, battle_file::CardId);
 
@@ -14,7 +14,7 @@ impl Chance {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct U64Range(pub u64, pub u64);
 
@@ -24,7 +24,7 @@ impl U64Range {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub enum Target {
     Me,
@@ -39,7 +39,7 @@ impl Target {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub enum CardAction {
     Damage {
@@ -85,7 +85,7 @@ impl CardAction {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Card {
     pub id: CardId,

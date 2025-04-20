@@ -1,10 +1,11 @@
 use std::collections::VecDeque;
 
+use schemars::JsonSchema;
 use serde::Serialize;
 
 pub type GridDimension = usize;
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Grid<T> {
     members: Vec<Vec<Option<T>>>,

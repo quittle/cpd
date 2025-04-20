@@ -1,17 +1,18 @@
+use schemars::JsonSchema;
 use serde::Serialize;
 
 use crate::{CardAction, DeclareWrappedType, Target, battle_file};
 
 DeclareWrappedType!(EffectId, id, battle_file::EffectId);
 
-#[derive(Debug, Clone, Serialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, PartialEq, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub enum Trigger {
     Death,
     TurnStart,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Effect {
     pub id: EffectId,
