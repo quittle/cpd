@@ -1,6 +1,6 @@
 import React from "react";
 import { Battle, CardId, Character, CharacterId, Effect } from "./battle";
-import { assetPath, countEntries } from "./utils";
+import { assetUrl, assetPath, countEntries } from "./utils";
 import { pass, takeAction } from "./state";
 import { isCardEligible } from "./Card";
 import MeterBar from "./MeterBar";
@@ -60,7 +60,7 @@ export default function Character(props: {
               className="effect"
               title={effect.name}
               style={{
-                backgroundImage: `url(${assetPath(effect.image)})`,
+                backgroundImage: assetUrl(effect.image),
               }}
             />
           </Badge>

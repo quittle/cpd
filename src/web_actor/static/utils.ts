@@ -55,6 +55,11 @@ export function assetPath(rawAssetPath: string): string {
   return `ref/${rawAssetPath}`;
 }
 
+// Like `assetPath()` but returns a CSS url() string.
+export function assetUrl(rawAssetPath: string): string {
+  return `url(${assetPath(rawAssetPath)})`;
+}
+
 export interface Coordinate {
   x: number;
   y: number;

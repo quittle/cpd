@@ -7,7 +7,7 @@ import {
   isBoardItemCharacter,
   isBoardItemInert,
 } from "./battle";
-import { assetPath, Coordinate, isAdjacent } from "./utils";
+import { assetUrl, Coordinate, isAdjacent } from "./utils";
 import { move, takeAction } from "./state";
 import { isCardEligible } from "./Card";
 
@@ -19,7 +19,7 @@ export function GameBoard(props: {
   const [selectedSquare, setSelectedSquare] = useState<Coordinate>();
 
   const backgroundImage = battle.background_image
-    ? `url(${assetPath(battle.background_image)})`
+    ? assetUrl(battle.background_image)
     : undefined;
   return (
     <table className="game-board" style={{ backgroundImage }}>
@@ -34,14 +34,14 @@ export function GameBoard(props: {
               if (isBoardItemCharacter(cell)) {
                 character = battle.characters[cell.id];
                 if (character.image !== null) {
-                  image = `url(${assetPath(character.image)})`;
+                  image = assetUrl(character.image);
                 }
                 if (character.health == 0) {
-                  image = `url(${assetPath("skull.png")})`;
+                  image = assetUrl("skull.png");
                 }
                 isPlayer = props.battleState.character_id === cell.id;
               } else if (isBoardItemCard(cell)) {
-                image = `url(${assetPath("card.png")})`;
+                image = assetUrl("card.png");
                 isPlayer = false;
               } else if (isBoardItemInert(cell)) {
                 isPlayer = false;
