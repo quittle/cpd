@@ -93,6 +93,14 @@ export interface components {
                 effect: components["schemas"]["EffectId"];
                 target: components["schemas"]["Target"];
             };
+        } | {
+            ReduceEffect: {
+                /** Format: uint64 */
+                amount: number;
+                chance: components["schemas"]["Chance"];
+                effect: components["schemas"]["EffectId"];
+                target: components["schemas"]["Target"];
+            };
         };
         /** Format: uint */
         CardId: number;

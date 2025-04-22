@@ -44,6 +44,7 @@ impl Battle {
                     CardAction::Move { target, .. } => target,
                     CardAction::Effect { target, .. } => target,
                     CardAction::RemoveEffect { target, .. } => target,
+                    CardAction::ReduceEffect { target, .. } => target,
                 };
                 if target != &Target::Me && card.range.is_none() {
                     return Err(format!(
@@ -255,6 +256,12 @@ pub enum CardAction {
     RemoveEffect {
         target: Target,
         effect: EffectId,
+        chance: Option<f64>,
+    },
+    ReduceEffect {
+        target: Target,
+        effect: EffectId,
+        amount: Option<u64>,
         chance: Option<f64>,
     },
 }

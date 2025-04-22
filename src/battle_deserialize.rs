@@ -239,6 +239,17 @@ fn deserialize_card_action(card_action: &battle_file::CardAction) -> crate::Card
             effect: EffectId::new(*effect),
             chance: deserialize_chance(chance),
         },
+        battle_file::CardAction::ReduceEffect {
+            target,
+            effect,
+            amount,
+            chance,
+        } => crate::CardAction::ReduceEffect {
+            target: deserialize_target(target),
+            effect: EffectId::new(*effect),
+            amount: amount.unwrap_or(1),
+            chance: deserialize_chance(chance),
+        },
     }
 }
 

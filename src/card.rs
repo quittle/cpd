@@ -70,6 +70,12 @@ pub enum CardAction {
         effect: EffectId,
         chance: Chance,
     },
+    ReduceEffect {
+        target: Target,
+        effect: EffectId,
+        amount: u64,
+        chance: Chance,
+    },
 }
 
 impl CardAction {
@@ -81,6 +87,7 @@ impl CardAction {
             Self::Move { target, .. } => target,
             Self::Effect { target, .. } => target,
             Self::RemoveEffect { target, .. } => target,
+            Self::ReduceEffect { target, .. } => target,
         }
     }
 }

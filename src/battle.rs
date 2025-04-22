@@ -443,6 +443,35 @@ impl Battle {
                     target_character.effects.retain(|e| e != effect);
                 }
             }
+            CardAction::ReduceEffect {
+                effect,
+                amount,
+                chance,
+                ..
+            } => {
+                if chance.resolve(self.random_provider.as_ref())
+                    && target_character.effects.contains(effect)
+                {
+                    history_entry.extend(battle_markup![
+                        @id(&target_character.name),
+                        format!(" lost up to {} ", amount),
+                        @id(&self.effects[effect].name),
+                    ]);
+                    let mut amount = *amount;
+                    target_character.effects.retain(|e| {
+                        if e != effect {
+                            return true;
+                        }
+
+                        if amount == 0 {
+                            return true;
+                        }
+
+                        amount -= 1;
+                        false
+                    });
+                }
+            }
         }
 
         if !history_entry.is_empty() {

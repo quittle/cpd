@@ -21,7 +21,7 @@
                     "area": 0
                 },
                 {
-                    "type": "remove_effect",
+                    "type": "reduce_effect",
                     "target": "self",
                     "effect": 0,
                     "chance": 0.25
