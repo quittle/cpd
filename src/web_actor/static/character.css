@@ -16,3 +16,13 @@
   vertical-align: top;
   cursor: pointer;
 }
+
+.character .effects {
+  .effect {
+    width: 2em;
+    height: 2em;
+    display: inline-block;
+    background-size: cover;
+    border-radius: 100%;
+  }
+}

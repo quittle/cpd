@@ -1,9 +1,10 @@
 import React from "react";
-import { Battle, CardId, Character, CharacterId } from "./battle";
-import { assetPath } from "./utils";
+import { Battle, CardId, Character, CharacterId, Effect } from "./battle";
+import { assetPath, countEntries } from "./utils";
 import { pass, takeAction } from "./state";
 import { isCardEligible } from "./Card";
 import MeterBar from "./MeterBar";
+import Badge from "./Badge";
 
 export default function Character(props: {
   isPlayer: boolean;
@@ -13,6 +14,10 @@ export default function Character(props: {
 }) {
   const { isPlayer, characterId, draggedCard, battle } = props;
   const character = battle.characters[characterId];
+
+  const effects: [Effect, number][] = Array.from(
+    countEntries(character.effects),
+  ).map(([id, count]) => [battle.effects[id], count]);
 
   // Only ineligible if there is actively a card being dragged and that card isn't eligible.
   const isIneligible =
@@ -48,6 +53,19 @@ export default function Character(props: {
         backgroundColor="black"
         textColor="white"
       />
+      <div className="effects">
+        {effects.map(([effect, count]) => (
+          <Badge key={effect.id} count={count} showCountBelowTwo={false}>
+            <span
+              className="effect"
+              title={effect.name}
+              style={{
+                backgroundImage: `url(${assetPath(effect.image)})`,
+              }}
+            />
+          </Badge>
+        ))}
+      </div>
       {character.image ? (
         <img
           src={assetPath(character.image)}

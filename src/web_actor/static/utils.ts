@@ -69,3 +69,11 @@ export function isAdjacent(a?: Coordinate, b?: Coordinate): boolean {
     (a.y === b.y && (a.x === b.x - 1 || a.x === b.x + 1))
   );
 }
+
+export function countEntries<T>(entries: readonly T[]): Map<T, number> {
+  const ret: Map<T, number> = new Map();
+  for (const entry of entries) {
+    ret.set(entry, (ret.get(entry) ?? 0) + 1);
+  }
+  return ret;
+}

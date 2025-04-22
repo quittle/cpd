@@ -1,0 +1,20 @@
+.badge {
+  position: relative;
+
+  &::after {
+    content: attr(data-count);
+    background: red;
+    color: white;
+    border-radius: 100%;
+    border: 0.1em solid white;
+    width: 1em;
+    height: 1em;
+    padding: 0.1em;
+    display: inline-block;
+    text-align: center;
+    position: absolute;
+    bottom: -0.15em;
+    right: -0.15em;
+    font-size: 0.7em;
+  }
+}
