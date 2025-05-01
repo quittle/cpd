@@ -25,6 +25,9 @@ export interface components {
             };
             history: components["schemas"]["TemplateEntry_for_BattleTextEntry"][][];
             introduction?: components["schemas"]["StoryCardEntry"][] | null;
+            objects: {
+                [key: string]: components["schemas"]["Object"];
+            };
             /** Format: uint16 */
             round: number;
             teams: components["schemas"]["Team"][];
@@ -107,6 +110,7 @@ export interface components {
         /** Format: uint32 */
         Chance: number;
         Character: {
+            contains: components["schemas"]["Content"][];
             deck: components["schemas"]["CardId"][];
             /** Format: uint64 */
             default_movement: number;
@@ -130,6 +134,11 @@ export interface components {
         CharacterId: number;
         /** @enum {string} */
         CharacterRace: CharacterRace;
+        Content: {
+            Card: components["schemas"]["CardId"];
+        } | {
+            Object: components["schemas"]["ObjectId"];
+        };
         Effect: {
             actions: components["schemas"]["CardAction"][];
             description: string;
@@ -149,6 +158,14 @@ export interface components {
         };
         /** Format: uint64 */
         Health: number;
+        Object: {
+            description: string;
+            id: components["schemas"]["ObjectId"];
+            image?: string | null;
+            name: string;
+        };
+        /** Format: uint */
+        ObjectId: number;
         StoryCardEntry: {
             h1: string;
         } | {
@@ -193,10 +210,13 @@ export type CardId = components['schemas']['CardId'];
 export type Chance = components['schemas']['Chance'];
 export type Character = components['schemas']['Character'];
 export type CharacterId = components['schemas']['CharacterId'];
+export type Content = components['schemas']['Content'];
 export type Effect = components['schemas']['Effect'];
 export type EffectId = components['schemas']['EffectId'];
 export type GridForBoardItem = components['schemas']['Grid_for_BoardItem'];
 export type Health = components['schemas']['Health'];
+export type Object = components['schemas']['Object'];
+export type ObjectId = components['schemas']['ObjectId'];
 export type StoryCardEntry = components['schemas']['StoryCardEntry'];
 export type Team = components['schemas']['Team'];
 export type TeamId = components['schemas']['TeamId'];

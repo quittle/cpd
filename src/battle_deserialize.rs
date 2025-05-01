@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::{
     Actor, Battle, Board, BoardItem, CardId, Character, CharacterId, CharacterRace, DumbActor,
-    EffectId, Health, RandomProvider, Team, TeamId, TerminalActor, U64Range, battle_file,
+    EffectId, Health, ObjectId, RandomProvider, Team, TeamId, TerminalActor, U64Range, battle_file,
     web_actor::WebActor,
 };
 use futures::future::join_all;
@@ -14,6 +14,21 @@ pub fn normalize_maybe_u64_range(life_number_range: &battle_file::MaybeU64Range)
     }
 }
 
+fn validate_ids<T>(entries: &[T], id_extractor: impl Fn(&T) -> usize) -> Result<(), String>
+where
+    T: std::fmt::Debug,
+{
+    for (index, entry) in entries.iter().enumerate() {
+        if index != id_extractor(entry) {
+            return Err(format!(
+                "ID mismatch at index {} but found ({:?})",
+                index, entry,
+            ));
+        }
+    }
+    Ok(())
+}
+
 impl Battle {
     pub async fn deserialize(
         data: &str,
@@ -21,6 +36,10 @@ impl Battle {
         random_provider: Box<dyn RandomProvider>,
     ) -> Result<Self, String> {
         let battle = battle_file::Battle::parse_from_str(data)?;
+
+        validate_ids(&battle.cards, |entry| entry.id)?;
+        validate_ids(&battle.effects, |entry| entry.id)?;
+        validate_ids(&battle.objects, |entry| entry.id)?;
 
         let mut board = Board::new(battle.board.width, battle.board.height);
 
@@ -65,6 +84,27 @@ impl Battle {
                         BoardItem::Character(CharacterId::new(team_index * max_team_size + index)),
                     ) {
                         return Err(format!("Multiple entries found at {x}, {y}"));
+                    }
+
+                    for item in &member.contains {
+                        match item {
+                            battle_file::Content::Card(id) => {
+                                if battle.cards.len() <= *id {
+                                    return Err(format!(
+                                        "Invalid card id {id} for {}",
+                                        member.name
+                                    ));
+                                }
+                            }
+                            battle_file::Content::Object(id) => {
+                                if battle.objects.len() <= *id {
+                                    return Err(format!(
+                                        "Invalid object id {id} for {}",
+                                        member.name
+                                    ));
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -120,6 +160,18 @@ impl Battle {
                             default_movement: member
                                 .movement
                                 .unwrap_or(battle.default_movement.unwrap_or(0)),
+                            contains: member
+                                .contains
+                                .iter()
+                                .map(|content| match content {
+                                    battle_file::Content::Card(id) => {
+                                        crate::Content::Card(CardId::new(*id))
+                                    }
+                                    battle_file::Content::Object(id) => {
+                                        crate::Content::Object(ObjectId::new(*id))
+                                    }
+                                })
+                                .collect(),
                         },
                     )
                 })
@@ -134,6 +186,12 @@ impl Battle {
                 .iter()
                 .enumerate()
                 .map(|(index, effect)| (EffectId::new(index), deserialize_effect(effect)))
+                .collect(),
+            objects: battle
+                .objects
+                .iter()
+                .enumerate()
+                .map(|(index, object)| (ObjectId::new(index), deserialize_object(object)))
                 .collect(),
             teams: battle
                 .teams
@@ -270,6 +328,15 @@ fn deserialize_effect(effect: &battle_file::Effect) -> crate::Effect {
             .as_ref()
             .map(|triggers| triggers.iter().map(deserailize_trigger).collect())
             .unwrap_or_default(),
+    }
+}
+
+fn deserialize_object(object: &battle_file::Object) -> crate::Object {
+    crate::Object {
+        id: crate::ObjectId::new(object.id),
+        name: object.name.clone(),
+        description: object.description.clone(),
+        image: object.image.clone(),
     }
 }
 

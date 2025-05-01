@@ -51,6 +51,7 @@ pub struct Character {
     pub max_health: Health,
     pub remaining_actions: u64,
     pub hand_size: HandSize,
+    pub contains: Vec<Content>,
     pub image: Option<String>,
     pub movement: u64,
     pub default_movement: u64,

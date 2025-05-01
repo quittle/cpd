@@ -5,6 +5,7 @@ pub type LifeNumber = u64;
 pub type CardId = usize;
 pub type EffectId = usize;
 pub type HandSize = usize;
+pub type ObjectId = usize;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
@@ -17,7 +18,10 @@ pub struct Battle {
     pub default_movement: Option<u64>,
     #[serde(default)]
     pub effects: Vec<Effect>,
+    #[serde(default)]
     pub cards: Vec<Card>,
+    #[serde(default)]
+    pub objects: Vec<Object>,
     pub teams: Vec<Team>,
 }
 
@@ -165,6 +169,12 @@ pub struct Team {
     pub name: String,
     pub members: Vec<TeamMember>,
 }
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(deny_unknown_fields, rename_all = "snake_case")]
+pub enum Content {
+    Card(CardId),
+    Object(ObjectId),
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
@@ -176,6 +186,8 @@ pub struct TeamMember {
     pub cards: Vec<CardId>,
     #[serde(default)]
     pub effects: Vec<EffectId>,
+    #[serde(default)]
+    pub contains: Vec<Content>,
     pub hand_size: Option<HandSize>,
     #[serde(default)]
     pub is_player: bool,
@@ -275,6 +287,16 @@ pub struct Card {
     pub flavor: Option<String>,
     pub actions: Vec<CardAction>,
     pub range: Option<u64>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(deny_unknown_fields)]
+pub struct Object {
+    pub id: ObjectId,
+    pub name: String,
+    pub description: String,
+    pub flavor: Option<String>,
+    pub image: Option<String>,
 }
 
 #[cfg(test)]

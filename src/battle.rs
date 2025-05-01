@@ -1,7 +1,7 @@
 use crate::{
     Action, ActionError, Actor, Attack, BattleText, Board, BoardItem, Card, CardAction, CardId,
-    Character, CharacterId, DeclareWrappedType, Effect, EffectId, GridLocation, Health,
-    RandomProvider, Target, Trigger, U64Range, battle_file, battle_markup,
+    Character, CharacterId, DeclareWrappedType, Effect, EffectId, GridLocation, Health, Object,
+    ObjectId, RandomProvider, Target, Trigger, U64Range, battle_file, battle_markup,
 };
 use schemars::JsonSchema;
 use serde::Serialize;
@@ -39,6 +39,7 @@ pub struct Battle {
     pub round: u16,
     pub cards: HashMap<CardId, Card>,
     pub effects: HashMap<EffectId, Effect>,
+    pub objects: HashMap<ObjectId, Object>,
     pub default_turn_actions: u64,
     #[serde(skip)]
     pub asset_directory: Option<PathBuf>,
