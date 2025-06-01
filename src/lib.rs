@@ -20,6 +20,7 @@ pub mod random_provider;
 pub mod template;
 pub mod terminal_actor;
 pub mod terminal_ui;
+pub mod utils;
 pub mod web_actor;
 pub mod wrapped_type;
 
@@ -41,3 +42,4 @@ pub use random_provider::*;
 pub use template::*;
 pub use terminal_actor::*;
 pub use terminal_ui::*;
+pub use utils::*;

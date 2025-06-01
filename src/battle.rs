@@ -1,7 +1,8 @@
 use crate::{
     Action, ActionError, Actor, Attack, BattleText, Board, BoardItem, Card, CardAction, CardId,
-    Character, CharacterId, DeclareWrappedType, Effect, EffectId, GridLocation, Health, Object,
-    ObjectId, RandomProvider, Target, Trigger, U64Range, battle_file, battle_markup,
+    Character, CharacterId, DeclareWrappedType, Effect, EffectId, GridLocation, HashMapExt, Health,
+    Object, ObjectId, RandomProvider, Target, Trigger, U64Range, VecExt, battle_file,
+    battle_markup,
 };
 use schemars::JsonSchema;
 use serde::Serialize;
@@ -169,7 +170,7 @@ impl Battle {
                     @id(&character.name),
                     " took no action",
                 ]);
-                let character = self.characters.get_mut(actor).unwrap();
+                let character = self.characters.require_mut(actor);
                 character.remaining_actions = 0;
                 character.movement = 0;
 
@@ -187,7 +188,7 @@ impl Battle {
                             Some(BoardItem::Character(_) | BoardItem::Inert)
                         )
                     {
-                        self.characters.get_mut(&target).unwrap().movement -= 1;
+                        self.characters.require_mut(&target).movement -= 1;
 
                         self.board.grid.clear(x, y);
 
@@ -202,7 +203,7 @@ impl Battle {
                                 panic!("Inert should not be in the way of movement");
                             }
                             Some(BoardItem::Card(card_id)) => {
-                                self.characters.get_mut(&target).unwrap().hand.push(card_id);
+                                self.characters.require_mut(&target).hand.push(card_id);
                             }
                             Some(BoardItem::Character(_)) => {
                                 panic!("Character should not be in the way of movement");
@@ -250,7 +251,7 @@ impl Battle {
                 ];
                 self.history.push(history_entry);
 
-                self.characters.get_mut(actor).unwrap().remaining_actions -= 1;
+                self.characters.require_mut(actor).remaining_actions -= 1;
 
                 for action in card.actions.clone() {
                     // If the action specifically targets me, then force it to target the actor
@@ -265,13 +266,9 @@ impl Battle {
                 }
 
                 // Remove card from hand
-                let hand = &mut self.characters.get_mut(actor).unwrap().hand;
-                hand.remove(hand.iter().position(|id| id == &card_id).unwrap());
-                self.characters
-                    .get_mut(actor)
-                    .unwrap()
-                    .discard
-                    .push(card_id);
+                let character = self.characters.require_mut(actor);
+                character.hand.remove_first_match(|id| id == &card_id);
+                character.discard.push(card_id);
 
                 true
             }
@@ -296,7 +293,7 @@ impl Battle {
                 );
             }
 
-            let character = self.characters.get_mut(&turn.character).unwrap();
+            let character = self.characters.require_mut(&turn.character);
 
             character.refresh_hand(self.random_provider.as_ref());
             character.remaining_actions = character
@@ -361,14 +358,13 @@ impl Battle {
             &target_id
         };
 
-        let target_character = self.characters.get_mut(target_id).unwrap();
+        let target_character = self.characters.require_mut(target_id);
         match action {
             CardAction::Damage { amount, area, .. } => {
                 for (attacked_character_id, value) in
                     self.get_all_character_amounts_in_range(*target_id, area, amount)
                 {
-                    let attacked_character =
-                        self.characters.get_mut(&attacked_character_id).unwrap();
+                    let attacked_character = self.characters.require_mut(&attacked_character_id);
 
                     if attacked_character.is_dead() {
                         continue;
@@ -401,7 +397,7 @@ impl Battle {
                 for (healed_character_id, value) in
                     self.get_all_character_amounts_in_range(*target_id, area, amount)
                 {
-                    let healed_character = self.characters.get_mut(&healed_character_id).unwrap();
+                    let healed_character = self.characters.require_mut(&healed_character_id);
 
                     history_entry.extend(battle_markup!["Healed ", @damage(&value), ". "]);
 
