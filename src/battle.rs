@@ -1,8 +1,8 @@
 use crate::{
     Action, ActionError, Actor, Attack, BattleText, Board, BoardItem, Card, CardAction, CardId,
-    Character, CharacterId, DeclareWrappedType, Effect, EffectId, GridLocation, HashMapExt, Health,
-    Object, ObjectId, RandomProvider, Target, Trigger, U64Range, VecExt, battle_file,
-    battle_markup,
+    Character, CharacterId, Content, DeclareWrappedType, Effect, EffectId, GridLocation,
+    HashMapExt, Health, Object, ObjectId, RandomProvider, TakeActionItem, Target, Trigger,
+    U64Range, VecExt, battle_file, battle_markup,
 };
 use schemars::JsonSchema;
 use serde::Serialize;
@@ -271,6 +271,94 @@ impl Battle {
                 character.discard.push(card_id);
 
                 true
+            }
+            Action::Take(character_id, location, item) => self
+                .handle_take(actor, character_id, location, item)
+                .unwrap_or_default(),
+        }
+    }
+
+    fn handle_take(
+        &mut self,
+        actor: &CharacterId,
+        character_id: CharacterId,
+        location: GridLocation,
+        item: TakeActionItem,
+    ) -> Option<bool> {
+        if character_id != *actor {
+            // Currently only the actor can take for themself
+            return None;
+        }
+
+        let item_id: &usize = item.id();
+
+        let (x, y) = self.board.find(&BoardItem::Character(character_id))?;
+        let character = &self.characters[actor];
+        if location.distance(&GridLocation { x, y }) > character.reach_distance() {
+            // If the character is not in range, they cannot take anything
+            return None;
+        }
+
+        let add_card = |battle: &mut Battle, card_id: CardId| {
+            let character = battle.characters.get_mut(actor).unwrap();
+            battle.history.push(battle_markup![
+                @id(&character.name),
+                " took ",
+                @id(&battle.cards[&card_id].name),
+                ". "
+            ]);
+            character.hand.push(card_id);
+        };
+        let add_object = |battle: &mut Battle, object_id: ObjectId| {
+            let character: &mut Character = battle.characters.get_mut(actor).unwrap();
+            battle.history.push(battle_markup![
+                @id(&character.name),
+                " took ",
+                @id(&battle.objects[&object_id].name),
+                ". "
+            ]);
+            character.contains.push(Content::Object(object_id));
+        };
+
+        let board_item = self.board.grid.get(location.x, location.y)?;
+        match board_item {
+            &BoardItem::Inert => {
+                // If the item is inert, they cannot take anything
+                None
+            }
+            &BoardItem::Card(card_id) => {
+                if &card_id.id != item_id {
+                    // Not the right card
+
+                    return None;
+                }
+                self.board.grid.clear(x, y);
+                add_card(self, card_id);
+                Some(true)
+            }
+            BoardItem::Character(loc_character_id) => {
+                let content = self
+                    .characters
+                    .require_mut(loc_character_id)
+                    .contains
+                    .remove_first_match(|content| match content {
+                        Content::Object(id) => &id.id == item_id,
+                        Content::Card(id) => &id.id == item_id,
+                    })?;
+
+                match content {
+                    Content::Object(object_id) => {
+                        if self.objects.contains_key(&object_id) {
+                            add_object(self, object_id);
+                        }
+                    }
+                    Content::Card(card_id) => {
+                        if self.cards.contains_key(&card_id) {
+                            add_card(self, card_id);
+                        }
+                    }
+                }
+                Some(true)
             }
         }
     }

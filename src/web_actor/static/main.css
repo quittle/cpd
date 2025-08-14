@@ -3,6 +3,7 @@
 @import "battle-history.css";
 @import "card.css";
 @import "character.css";
+@import "container.css";
 @import "game-board.css";
 @import "meter-bar.css";
 
@@ -16,4 +17,8 @@ html {
 
 * {
   image-rendering: pixelated;
+}
+
+button {
+  cursor: pointer;
 }

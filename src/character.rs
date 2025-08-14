@@ -85,6 +85,10 @@ impl Character {
     pub fn heal(&mut self, healing: Health) {
         self.health = min(self.health + healing, self.max_health);
     }
+
+    pub fn reach_distance(&self) -> GridDimension {
+        1
+    }
 }
 
 #[derive(Clone)]

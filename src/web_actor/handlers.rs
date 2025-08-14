@@ -1,4 +1,7 @@
-use crate::{Action, ActionError, ActionFailure, ActionResult, CardId, CharacterId, GridLocation};
+use crate::{
+    Action, ActionError, ActionFailure, ActionResult, CardId, CharacterId, GridLocation,
+    TakeActionItem,
+};
 use actix_web::{HttpResponse, Responder, get, post, web};
 use actix_web_lab::sse;
 use serde::Deserialize;
@@ -19,6 +22,13 @@ pub enum BattleServerEvent {
 pub struct ServerState {
     pub event_tx: ArcEventSender,
     pub action_tx: Sender<BattleServerEvent>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Coordinate {
+    x: usize,
+    y: usize,
 }
 
 #[derive(Deserialize)]
@@ -47,16 +57,50 @@ async fn handle_act(
 }
 
 #[derive(Deserialize)]
-struct MoveDestination {
-    x: usize,
-    y: usize,
+#[serde(deny_unknown_fields, rename_all = "snake_case")]
+enum TakeItem {
+    Card(usize),
+    Object(usize),
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TakeParams {
+    target_id: usize,
+    from: Coordinate,
+    item: TakeItem,
+}
+
+#[post("/take")]
+async fn handle_take(
+    info: web::Json<TakeParams>,
+    state: web::Data<ArcServerState>,
+) -> impl Responder {
+    state
+        .lock()
+        .await
+        .action_tx
+        .send(BattleServerEvent::Action(ActionResult::Ok(Action::Take(
+            CharacterId::new(info.target_id),
+            GridLocation {
+                x: info.from.x,
+                y: info.from.y,
+            },
+            match info.item {
+                TakeItem::Card(id) => TakeActionItem::Card(id),
+                TakeItem::Object(id) => TakeActionItem::Object(id),
+            },
+        ))))
+        .await
+        .unwrap();
+    HttpResponse::Ok()
 }
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct MoveParams {
     target_id: usize,
-    to: MoveDestination,
+    to: Coordinate,
 }
 
 #[post("/move")]

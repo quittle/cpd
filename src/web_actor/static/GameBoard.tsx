@@ -7,8 +7,8 @@ import {
   isBoardItemCharacter,
   isBoardItemInert,
 } from "./battle";
-import { assetUrl, Coordinate, isAdjacent } from "./utils";
-import { move, takeAction } from "./state";
+import { assetUrl, Coordinate, getPlayerCoordinate, isAdjacent } from "./utils";
+import { move, takeAction, takeContent } from "./state";
 import { isCardEligible } from "./Card";
 
 export function GameBoard(props: {
@@ -17,6 +17,8 @@ export function GameBoard(props: {
 }) {
   const battle = props.battleState.battle;
   const [selectedSquare, setSelectedSquare] = useState<Coordinate>();
+
+  const playerCoordinate = getPlayerCoordinate(props.battleState);
 
   const backgroundImage = battle.background_image
     ? assetUrl(battle.background_image)
@@ -31,6 +33,7 @@ export function GameBoard(props: {
               let character: Character | undefined;
               let isPlayer;
               let isInert = false;
+              let isClickable: boolean;
               if (isBoardItemCharacter(cell)) {
                 character = battle.characters[cell.id];
                 if (character.image !== null) {
@@ -40,12 +43,15 @@ export function GameBoard(props: {
                   image = assetUrl("skull.png");
                 }
                 isPlayer = props.battleState.character_id === cell.id;
+                isClickable = !isPlayer;
               } else if (isBoardItemCard(cell)) {
                 image = assetUrl("card.png");
                 isPlayer = false;
+                isClickable = true;
               } else if (isBoardItemInert(cell)) {
                 isPlayer = false;
                 isInert = true;
+                isClickable = false;
               }
               const curLocation: Coordinate = { x, y };
               const isSelectedSquare =
@@ -67,6 +73,7 @@ export function GameBoard(props: {
                     borderColor: isSelectedSquare ? "red" : "black",
                     backgroundImage: image,
                     opacity: isIneligible ? 0.5 : 1,
+                    cursor: isClickable ? "pointer" : "default",
                   }}
                   onDragOver={(e) => {
                     if (props.draggedCard === undefined) {
@@ -93,20 +100,29 @@ export function GameBoard(props: {
                       } else {
                         setSelectedSquare(curLocation);
                       }
-                    } else {
-                      if (
-                        selectedSquare !== undefined &&
-                        isAdjacent(selectedSquare, curLocation)
-                      ) {
-                        const item =
-                          battle.board.grid.members[selectedSquare.y][
-                            selectedSquare.x
-                          ];
-                        if (isBoardItemCharacter(item)) {
-                          console.log("Trying to move");
-                          setSelectedSquare(undefined);
-                          await move(item.id, curLocation);
-                        }
+                    } else if (
+                      isAdjacent(selectedSquare, curLocation) &&
+                      selectedSquare !== undefined
+                    ) {
+                      const item =
+                        battle.board.grid.members[selectedSquare.y][
+                          selectedSquare.x
+                        ];
+                      if (isBoardItemCharacter(item)) {
+                        setSelectedSquare(undefined);
+                        await move(item.id, curLocation);
+                      }
+                    } else if (isAdjacent(curLocation, playerCoordinate)) {
+                      if (isBoardItemCard(cell)) {
+                        await takeContent(
+                          props.battleState.character_id,
+                          curLocation,
+                          {
+                            card: cell.id,
+                          },
+                        );
+                      } else if (isBoardItemCharacter(cell)) {
+                        console.log("Trying to take content from", cell.id);
                       }
                     }
                   }}

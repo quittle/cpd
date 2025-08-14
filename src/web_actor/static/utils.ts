@@ -1,10 +1,14 @@
+import React from "react";
 import {
   ActionTarget,
   Battle,
+  BattleState,
   Card,
   CardAction,
   Character,
   CharacterId,
+  Content,
+  isBoardItemCharacter,
 } from "./battle";
 
 export function getActionTarget(action: CardAction): ActionTarget {
@@ -81,4 +85,43 @@ export function countEntries<T>(entries: readonly T[]): Map<T, number> {
     ret.set(entry, (ret.get(entry) ?? 0) + 1);
   }
   return ret;
+}
+
+export function getPlayerCoordinate(battleState: BattleState): Coordinate {
+  return getCharacterCoordinate(battleState.battle, battleState.character_id);
+}
+
+export function getCharacterCoordinate(
+  battle: Battle,
+  characterId: CharacterId,
+): Coordinate {
+  const cells = battle.board.grid.members;
+  for (let y = 0; y < cells.length; y++) {
+    for (let x = 0; x < cells[y].length; x++) {
+      const cell = cells[y][x];
+      if (isBoardItemCharacter(cell) && cell.id === characterId) {
+        return { x, y };
+      }
+    }
+  }
+
+  throw new Error(`Character {characterId} not found on board`);
+}
+
+export function describeContent(
+  content: Content,
+  battle: Battle,
+): { key: React.Key; assetUrl: string } {
+  if ("Card" in content) {
+    return {
+      key: `C{content.Card}`,
+      assetUrl: assetUrl("card.png"),
+    };
+  }
+  if ("Object" in content) {
+    return {
+      key: `O{content.Object}`,
+      assetUrl: assetUrl(battle.objects[content.Object].image),
+    };
+  }
 }

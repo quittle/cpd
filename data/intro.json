@@ -54,7 +54,7 @@
                     "name": "Chest",
                     "race": "Machine",
                     "image": "chest.png",
-                    "base_health": 0,
+                    "base_health": 5,
                     "hand_size": 0,
                     "cards": [],
                     "location": [1, 0],

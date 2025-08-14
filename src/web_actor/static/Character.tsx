@@ -1,19 +1,24 @@
 import React from "react";
-import { Battle, CardId, Character, CharacterId, Effect } from "./battle";
+import { BattleState, CardId, Character, CharacterId, Effect } from "./battle";
 import { assetUrl, assetPath, countEntries } from "./utils";
 import { pass, takeAction } from "./state";
 import { isCardEligible } from "./Card";
 import MeterBar from "./MeterBar";
 import Badge from "./Badge";
+import Container from "./Container";
 
 export default function Character(props: {
   isPlayer: boolean;
   characterId: CharacterId;
   draggedCard: CardId | undefined;
-  battle: Battle;
+  battleState: BattleState;
 }) {
-  const { isPlayer, characterId, draggedCard, battle } = props;
+  const { isPlayer, characterId, draggedCard, battleState } = props;
+  const { battle } = battleState;
+
   const character = battle.characters[characterId];
+
+  const [contentsOpened, setContentsOpened] = React.useState(false);
 
   const effects: [Effect, number][] = Array.from(
     countEntries(character.effects),
@@ -83,12 +88,30 @@ export default function Character(props: {
         </button>
       ) : null}
       <h3>{character.name}</h3>
+      {character.contains.length > 0 ? (
+        <button
+          className="open"
+          onClick={() => {
+            setContentsOpened(true);
+          }}
+        >
+          Open
+        </button>
+      ) : null}
       {isPlayer
         ? `Remaining actions: ${"🔵".repeat(character.remaining_actions)}`
         : null}
       <div>
         Movement: <b>{character.movement}</b>
       </div>
+      {contentsOpened ? (
+        <Container
+          characterId={characterId}
+          battleState={battleState}
+          contents={character.contains}
+          onClose={() => setContentsOpened(false)}
+        />
+      ) : null}
     </div>
   );
 }

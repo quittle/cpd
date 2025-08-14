@@ -7,6 +7,22 @@ pub enum Action {
     Pass,
     Act(CardId, CharacterId),
     Move(CharacterId, GridLocation),
+    Take(CharacterId, GridLocation, TakeActionItem),
+}
+
+#[derive(Debug, PartialEq)]
+pub enum TakeActionItem {
+    Card(usize),
+    Object(usize),
+}
+
+impl TakeActionItem {
+    pub fn id(&self) -> &usize {
+        match self {
+            Self::Card(id) => id,
+            Self::Object(id) => id,
+        }
+    }
 }
 
 #[derive(Debug)]

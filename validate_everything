@@ -3,6 +3,10 @@
 set -eu
 set -o pipefail
 
+source ~/.nvm/nvm.sh
+
+nvm use
+
 npm ci
 
 cargo fmt --all

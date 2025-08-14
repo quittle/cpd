@@ -62,7 +62,7 @@ export default function App() {
             isPlayer={true}
             characterId={characterId}
             draggedCard={dragState}
-            battle={battle}
+            battleState={battleState}
           />
           {Object.values(battle.characters)
             .filter((character) => character.id !== characterId)
@@ -72,7 +72,7 @@ export default function App() {
                 key={character.id}
                 characterId={character.id}
                 draggedCard={dragState}
-                battle={battle}
+                battleState={battleState}
               />
             ))}
         </div>
