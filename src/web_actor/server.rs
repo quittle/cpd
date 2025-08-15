@@ -101,10 +101,9 @@ where {
                             .args(["run", "build-server"])
                             .env("OUT_DIR", env!("OUT_DIR"))
                             .status()
+                            && !status.success()
                         {
-                            if !status.success() {
-                                println!("Asset build failed!");
-                            }
+                            println!("Asset build failed!");
                         }
                     }
                 })),

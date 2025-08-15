@@ -181,37 +181,35 @@ impl Battle {
                     return false;
                 }
 
-                if let Some((x, y)) = self.board.find(&BoardItem::Character(target)) {
-                    if location.is_adjacent(&GridLocation { x, y })
-                        && !matches!(
-                            self.board.grid.get(location.x, location.y),
-                            Some(BoardItem::Character(_) | BoardItem::Inert)
-                        )
-                    {
-                        self.characters.require_mut(&target).movement -= 1;
+                if let Some((x, y)) = self.board.find(&BoardItem::Character(target))
+                    && location.is_adjacent(&GridLocation { x, y })
+                    && !matches!(
+                        self.board.grid.get(location.x, location.y),
+                        Some(BoardItem::Character(_) | BoardItem::Inert)
+                    )
+                {
+                    self.characters.require_mut(&target).movement -= 1;
 
-                        self.board.grid.clear(x, y);
+                    self.board.grid.clear(x, y);
 
-                        let prev_contents = self.board.grid.set(
-                            location.x,
-                            location.y,
-                            BoardItem::Character(target),
-                        );
-                        match prev_contents {
-                            None => {}
-                            Some(BoardItem::Inert) => {
-                                panic!("Inert should not be in the way of movement");
-                            }
-                            Some(BoardItem::Card(card_id)) => {
-                                self.characters.require_mut(&target).hand.push(card_id);
-                            }
-                            Some(BoardItem::Character(_)) => {
-                                panic!("Character should not be in the way of movement");
-                            }
+                    let prev_contents =
+                        self.board
+                            .grid
+                            .set(location.x, location.y, BoardItem::Character(target));
+                    match prev_contents {
+                        None => {}
+                        Some(BoardItem::Inert) => {
+                            panic!("Inert should not be in the way of movement");
                         }
-
-                        return true;
+                        Some(BoardItem::Card(card_id)) => {
+                            self.characters.require_mut(&target).hand.push(card_id);
+                        }
+                        Some(BoardItem::Character(_)) => {
+                            panic!("Character should not be in the way of movement");
+                        }
                     }
+
+                    return true;
                 }
 
                 false

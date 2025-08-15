@@ -71,23 +71,24 @@ impl Actor for DumbActor {
 
             for (team_id, actor) in &battle.actors {
                 let opponent = &battle.characters[actor.get_character_id()];
-                if &my_team != team_id && !opponent.is_dead() {
-                    if let Some(distance) = battle.board.distance(
+                if &my_team != team_id
+                    && !opponent.is_dead()
+                    && let Some(distance) = battle.board.distance(
                         BoardItem::Character(character.id),
                         BoardItem::Character(opponent.id),
-                    ) {
-                        if card.range >= distance && character.remaining_actions > 0 {
-                            return Ok(Action::Act(card_id, opponent.id));
-                        } else if character.movement > 0 {
-                            if let Some(path) = battle.board.shortest_path(
-                                BoardItem::Character(character.id),
-                                BoardItem::Character(opponent.id),
-                            ) {
-                                // Only try moving if there's more than 2 spots (current location and target location)
-                                if path.len() > 2 {
-                                    return Ok(Action::Move(character.id, path[1].clone()));
-                                }
-                            }
+                    )
+                {
+                    if card.range >= distance && character.remaining_actions > 0 {
+                        return Ok(Action::Act(card_id, opponent.id));
+                    } else if character.movement > 0
+                        && let Some(path) = battle.board.shortest_path(
+                            BoardItem::Character(character.id),
+                            BoardItem::Character(opponent.id),
+                        )
+                    {
+                        // Only try moving if there's more than 2 spots (current location and target location)
+                        if path.len() > 2 {
+                            return Ok(Action::Move(character.id, path[1].clone()));
                         }
                     }
                 }
