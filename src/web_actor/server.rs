@@ -17,7 +17,9 @@ use std::{
 };
 use tokio::sync::Mutex;
 
-use crate::web_actor::handlers::{handle_act, handle_info, handle_move, handle_pass, handle_sse};
+use crate::web_actor::handlers::{
+    handle_act, handle_info, handle_move, handle_pass, handle_sse, handle_take,
+};
 
 pub struct Server<T> {
     _phantom: PhantomData<T>,
@@ -67,6 +69,7 @@ where {
                 .service(handle_move)
                 .service(handle_pass)
                 .service(handle_info)
+                .service(handle_take)
                 .service(handle_sse);
             if let Some(dir) = &additional_static_asset_directory {
                 app = app.service(actix_files::Files::new("/ref", dir.clone()).use_etag(true));
@@ -98,10 +101,9 @@ where {
                             .args(["run", "build-server"])
                             .env("OUT_DIR", env!("OUT_DIR"))
                             .status()
+                            && !status.success()
                         {
-                            if !status.success() {
-                                println!("Asset build failed!");
-                            }
+                            println!("Asset build failed!");
                         }
                     }
                 })),

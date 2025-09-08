@@ -1,10 +1,12 @@
 use std::collections::HashSet;
 
-use rand::prelude::*;
+use rand;
 
 pub trait RandomProvider {
     /// Returns a random value between lower and upper bound, inclusive.
     fn pick_linear_u64(&self, lower_bound: u64, upper_bound: u64) -> u64;
+    /// Returns a random value between lower and upper bound, inclusive.
+    fn pick_linear_u32(&self, lower_bound: u32, upper_bound: u32) -> u32;
     /// Returns a random value between lower and upper bound, inclusive.
     fn pick_linear_i64(&self, lower_bound: i64, upper_bound: i64) -> i64;
     /// Returns a random value between lower and upper bound, inclusive.
@@ -90,15 +92,19 @@ pub struct DefaultRandomProvider {}
 
 impl RandomProvider for DefaultRandomProvider {
     fn pick_linear_u64(&self, lower_bound: u64, upper_bound: u64) -> u64 {
-        thread_rng().gen_range(lower_bound..=upper_bound)
+        rand::random_range(lower_bound..=upper_bound)
+    }
+
+    fn pick_linear_u32(&self, lower_bound: u32, upper_bound: u32) -> u32 {
+        rand::random_range(lower_bound..=upper_bound)
     }
 
     fn pick_linear_i64(&self, lower_bound: i64, upper_bound: i64) -> i64 {
-        thread_rng().gen_range(lower_bound..=upper_bound)
+        rand::random_range(lower_bound..=upper_bound)
     }
 
     fn pick_linear_usize(&self, lower_bound: usize, upper_bound: usize) -> usize {
-        thread_rng().gen_range(lower_bound..=upper_bound)
+        rand::random_range(lower_bound..=upper_bound)
     }
 }
 
@@ -160,5 +166,15 @@ mod tests {
                 assert_eq!(result_set.len(), 10);
             }
         }
+    }
+
+    #[test]
+    fn test_shuffle() {
+        let random = DefaultRandomProvider::default();
+
+        let values: Vec<u8> = (1..=10).collect();
+
+        let new_values = values.shuffle(&random);
+        assert_eq!(new_values.len(), values.len());
     }
 }

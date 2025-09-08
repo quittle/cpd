@@ -1,6 +1,8 @@
 .game-board {
   background: #cddc39;
+  background-size: contain;
   font-size: 100px;
+
   & td {
     border: 1px solid;
     width: 1em;

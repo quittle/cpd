@@ -1,10 +1,12 @@
 use std::collections::VecDeque;
 
+use schemars::JsonSchema;
 use serde::Serialize;
 
 pub type GridDimension = usize;
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct Grid<T> {
     members: Vec<Vec<Option<T>>>,
     width: GridDimension,
@@ -91,10 +93,10 @@ impl<T> Grid<T> {
     {
         for (y, row) in self.members.iter().enumerate() {
             for (x, item) in row.iter().enumerate() {
-                if let Some(item) = item {
-                    if predicate(item) {
-                        return Some((x, y));
-                    }
+                if let Some(item) = item
+                    && predicate(item)
+                {
+                    return Some((x, y));
                 }
             }
         }
@@ -116,10 +118,10 @@ impl<T> Grid<T> {
                 if location.distance(&GridLocation { x, y }) > range {
                     continue;
                 }
-                if let Some(value) = self.get(x, y) {
-                    if predicate(value) {
-                        ret.push(GridLocation { x, y });
-                    }
+                if let Some(value) = self.get(x, y)
+                    && predicate(value)
+                {
+                    ret.push(GridLocation { x, y });
                 }
             }
         }

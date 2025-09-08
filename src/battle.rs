@@ -1,8 +1,10 @@
 use crate::{
     Action, ActionError, Actor, Attack, BattleText, Board, BoardItem, Card, CardAction, CardId,
-    Character, CharacterId, DeclareWrappedType, Effect, EffectId, GridLocation, Health,
-    RandomProvider, Target, Trigger, U64Range, battle_file, battle_markup,
+    Character, CharacterId, Content, DeclareWrappedType, Effect, EffectId, GridLocation,
+    HashMapExt, Health, Object, ObjectId, RandomProvider, TakeActionItem, Target, Trigger,
+    U64Range, VecExt, battle_file, battle_markup,
 };
+use schemars::JsonSchema;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -10,7 +12,8 @@ use std::process::ExitCode;
 
 DeclareWrappedType!(TeamId, id, u64);
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct Team {
     pub id: TeamId,
     pub name: String,
@@ -23,7 +26,8 @@ struct Turn {
 
 type StoryCard = battle_file::StoryCard;
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct Battle {
     #[serde(skip)]
     pub actors: Vec<(TeamId, Box<dyn Actor>)>,
@@ -36,10 +40,12 @@ pub struct Battle {
     pub round: u16,
     pub cards: HashMap<CardId, Card>,
     pub effects: HashMap<EffectId, Effect>,
+    pub objects: HashMap<ObjectId, Object>,
     pub default_turn_actions: u64,
     #[serde(skip)]
     pub asset_directory: Option<PathBuf>,
     pub board: Board,
+    pub background_image: Option<String>,
 }
 
 unsafe impl Sync for Battle {}
@@ -125,18 +131,14 @@ impl Battle {
         amount: &U64Range,
     ) -> Vec<(CharacterId, u64)> {
         let range = area.resolve(self.random_provider.as_ref());
-        let (attack_x, attack_y) = self.board.find(&BoardItem::Character(target_id)).unwrap();
-
-        self.get_characters_in_range(
-            GridLocation {
-                x: attack_x,
-                y: attack_y,
-            },
-            range,
-        )
-        .iter()
-        .map(|id| (*id, amount.resolve(self.random_provider.as_ref())))
-        .collect()
+        if let Some((x, y)) = self.board.find(&BoardItem::Character(target_id)) {
+            self.get_characters_in_range(GridLocation { x, y }, range)
+                .iter()
+                .map(|id| (*id, amount.resolve(self.random_provider.as_ref())))
+                .collect()
+        } else {
+            vec![]
+        }
     }
 
     fn is_in_range(
@@ -168,7 +170,7 @@ impl Battle {
                     @id(&character.name),
                     " took no action",
                 ]);
-                let character = self.characters.get_mut(actor).unwrap();
+                let character = self.characters.require_mut(actor);
                 character.remaining_actions = 0;
                 character.movement = 0;
 
@@ -179,18 +181,35 @@ impl Battle {
                     return false;
                 }
 
-                if let Some((x, y)) = self.board.find(&BoardItem::Character(target)) {
-                    if location.is_adjacent(&GridLocation { x, y })
-                        && !self.board.grid.is_set(location.x, location.y)
-                    {
-                        self.characters.get_mut(&target).unwrap().movement -= 1;
+                if let Some((x, y)) = self.board.find(&BoardItem::Character(target))
+                    && location.is_adjacent(&GridLocation { x, y })
+                    && !matches!(
+                        self.board.grid.get(location.x, location.y),
+                        Some(BoardItem::Character(_) | BoardItem::Inert)
+                    )
+                {
+                    self.characters.require_mut(&target).movement -= 1;
 
-                        self.board.grid.clear(x, y);
+                    self.board.grid.clear(x, y);
+
+                    let prev_contents =
                         self.board
                             .grid
                             .set(location.x, location.y, BoardItem::Character(target));
-                        return true;
+                    match prev_contents {
+                        None => {}
+                        Some(BoardItem::Inert) => {
+                            panic!("Inert should not be in the way of movement");
+                        }
+                        Some(BoardItem::Card(card_id)) => {
+                            self.characters.require_mut(&target).hand.push(card_id);
+                        }
+                        Some(BoardItem::Character(_)) => {
+                            panic!("Character should not be in the way of movement");
+                        }
                     }
+
+                    return true;
                 }
 
                 false
@@ -230,7 +249,7 @@ impl Battle {
                 ];
                 self.history.push(history_entry);
 
-                self.characters.get_mut(actor).unwrap().remaining_actions -= 1;
+                self.characters.require_mut(actor).remaining_actions -= 1;
 
                 for action in card.actions.clone() {
                     // If the action specifically targets me, then force it to target the actor
@@ -245,10 +264,99 @@ impl Battle {
                 }
 
                 // Remove card from hand
-                let hand = &mut self.characters.get_mut(actor).unwrap().hand;
-                hand.remove(hand.iter().position(|id| id == &card_id).unwrap());
+                let character = self.characters.require_mut(actor);
+                character.hand.remove_first_match(|id| id == &card_id);
+                character.discard.push(card_id);
 
                 true
+            }
+            Action::Take(character_id, location, item) => self
+                .handle_take(actor, character_id, location, item)
+                .unwrap_or_default(),
+        }
+    }
+
+    fn handle_take(
+        &mut self,
+        actor: &CharacterId,
+        character_id: CharacterId,
+        location: GridLocation,
+        item: TakeActionItem,
+    ) -> Option<bool> {
+        if character_id != *actor {
+            // Currently only the actor can take for themself
+            return None;
+        }
+
+        let item_id: &usize = item.id();
+
+        let (x, y) = self.board.find(&BoardItem::Character(character_id))?;
+        let character = &self.characters[actor];
+        if location.distance(&GridLocation { x, y }) > character.reach_distance() {
+            // If the character is not in range, they cannot take anything
+            return None;
+        }
+
+        let add_card = |battle: &mut Battle, card_id: CardId| {
+            let character = battle.characters.get_mut(actor).unwrap();
+            battle.history.push(battle_markup![
+                @id(&character.name),
+                " took ",
+                @id(&battle.cards[&card_id].name),
+                ". "
+            ]);
+            character.hand.push(card_id);
+        };
+        let add_object = |battle: &mut Battle, object_id: ObjectId| {
+            let character: &mut Character = battle.characters.get_mut(actor).unwrap();
+            battle.history.push(battle_markup![
+                @id(&character.name),
+                " took ",
+                @id(&battle.objects[&object_id].name),
+                ". "
+            ]);
+            character.contains.push(Content::Object(object_id));
+        };
+
+        let board_item = self.board.grid.get(location.x, location.y)?;
+        match board_item {
+            &BoardItem::Inert => {
+                // If the item is inert, they cannot take anything
+                None
+            }
+            &BoardItem::Card(card_id) => {
+                if &card_id.id != item_id {
+                    // Not the right card
+
+                    return None;
+                }
+                self.board.grid.clear(x, y);
+                add_card(self, card_id);
+                Some(true)
+            }
+            BoardItem::Character(loc_character_id) => {
+                let content = self
+                    .characters
+                    .require_mut(loc_character_id)
+                    .contains
+                    .remove_first_match(|content| match content {
+                        Content::Object(id) => &id.id == item_id,
+                        Content::Card(id) => &id.id == item_id,
+                    })?;
+
+                match content {
+                    Content::Object(object_id) => {
+                        if self.objects.contains_key(&object_id) {
+                            add_object(self, object_id);
+                        }
+                    }
+                    Content::Card(card_id) => {
+                        if self.cards.contains_key(&card_id) {
+                            add_card(self, card_id);
+                        }
+                    }
+                }
+                Some(true)
             }
         }
     }
@@ -259,16 +367,25 @@ impl Battle {
             .push(battle_markup![format!("--- Round {}", self.round)]);
         let turns = self.build_turns();
         for turn in turns {
-            let character = self.characters.get_mut(&turn.character).unwrap();
+            if self.characters[&turn.character].is_dead() {
+                continue;
+            }
+            for effect_id in self.characters[&turn.character].effects.clone() {
+                self.try_run_effect(
+                    turn.character,
+                    turn.character,
+                    effect_id,
+                    Trigger::TurnStart,
+                );
+            }
+
+            let character = self.characters.require_mut(&turn.character);
+
             character.refresh_hand(self.random_provider.as_ref());
             character.remaining_actions = character
                 .get_default_turn_actions()
                 .unwrap_or(self.default_turn_actions);
             character.movement = character.default_movement;
-
-            if character.is_dead() {
-                continue;
-            }
 
             while self.characters[&turn.character].remaining_actions > 0
                 || self.characters[&turn.character].movement > 0
@@ -327,14 +444,13 @@ impl Battle {
             &target_id
         };
 
-        let target_character = self.characters.get_mut(target_id).unwrap();
+        let target_character = self.characters.require_mut(target_id);
         match action {
             CardAction::Damage { amount, area, .. } => {
                 for (attacked_character_id, value) in
                     self.get_all_character_amounts_in_range(*target_id, area, amount)
                 {
-                    let attacked_character =
-                        self.characters.get_mut(&attacked_character_id).unwrap();
+                    let attacked_character = self.characters.require_mut(&attacked_character_id);
 
                     if attacked_character.is_dead() {
                         continue;
@@ -352,6 +468,14 @@ impl Battle {
                                 Trigger::Death,
                             );
                         }
+
+                        // Remove the character from the board
+                        if let Some((x, y)) = self
+                            .board
+                            .find(&BoardItem::Character(attacked_character_id))
+                        {
+                            self.board.grid.clear(x, y);
+                        }
                     }
                 }
             }
@@ -359,7 +483,7 @@ impl Battle {
                 for (healed_character_id, value) in
                     self.get_all_character_amounts_in_range(*target_id, area, amount)
                 {
-                    let healed_character = self.characters.get_mut(&healed_character_id).unwrap();
+                    let healed_character = self.characters.require_mut(&healed_character_id);
 
                     history_entry.extend(battle_markup!["Healed ", @damage(&value), ". "]);
 
@@ -380,9 +504,62 @@ impl Battle {
                 history_entry.extend(battle_markup![format!("Moved {} spaces. ", value)]);
                 target_character.movement += value;
             }
+            CardAction::Effect { effect, chance, .. } => {
+                if chance.resolve(self.random_provider.as_ref()) {
+                    history_entry.extend(battle_markup![
+                        @id(&target_character.name),
+                        " got ",
+                        @id(&self.effects[effect].name),
+                    ]);
+                    target_character.effects.push(*effect);
+                }
+            }
+            CardAction::RemoveEffect { effect, chance, .. } => {
+                if chance.resolve(self.random_provider.as_ref())
+                    && target_character.effects.contains(effect)
+                {
+                    history_entry.extend(battle_markup![
+                        @id(&target_character.name),
+                        " lost ",
+                        @id(&self.effects[effect].name),
+                    ]);
+                    target_character.effects.retain(|e| e != effect);
+                }
+            }
+            CardAction::ReduceEffect {
+                effect,
+                amount,
+                chance,
+                ..
+            } => {
+                if chance.resolve(self.random_provider.as_ref())
+                    && target_character.effects.contains(effect)
+                {
+                    history_entry.extend(battle_markup![
+                        @id(&target_character.name),
+                        format!(" lost up to {} ", amount),
+                        @id(&self.effects[effect].name),
+                    ]);
+                    let mut amount = *amount;
+                    target_character.effects.retain(|e| {
+                        if e != effect {
+                            return true;
+                        }
+
+                        if amount == 0 {
+                            return true;
+                        }
+
+                        amount -= 1;
+                        false
+                    });
+                }
+            }
         }
 
-        self.history.push(history_entry);
+        if !history_entry.is_empty() {
+            self.history.push(history_entry);
+        }
 
         true
     }
@@ -409,7 +586,7 @@ impl Battle {
 mod tests {
     use futures::executor::block_on;
 
-    use crate::{Battle, DefaultRandomProvider};
+    use crate::{Battle, BoardItem, CardId, DefaultRandomProvider};
 
     #[tokio::test]
     async fn test_deserialize() -> Result<(), String> {
@@ -417,7 +594,20 @@ mod tests {
             "title": "Example Game",
             "description": "Example Description",
             "default_hand_size": 2,
-            "board": { "width": 2, "height": 2 },
+            "board": {
+                "width": 3,
+                "height": 3,
+                "cells": [
+                    {
+                        "location": [2, 0],
+                        "card": 0
+                    },
+                    {
+                        "location": [2, 1],
+                        "inert": true
+                    }
+                ]
+            },
             "cards": [
                 {
                     "id": 0,
@@ -513,6 +703,12 @@ mod tests {
             battle.characters[battle.actors[2].1.get_character_id()].name,
             "Member B1"
         );
+
+        assert_eq!(
+            battle.board.grid.get(2, 0),
+            Some(&BoardItem::Card(CardId::new(0)))
+        );
+        assert_eq!(battle.board.grid.get(2, 1), Some(&BoardItem::Inert));
 
         block_on(battle.run_to_completion()).unwrap();
         Ok(())

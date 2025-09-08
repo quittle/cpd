@@ -1,7 +1,14 @@
 import React, { useState } from "react";
-import { BattleState, CardId, Character } from "./battle";
-import { assetPath, Coordinate, isAdjacent } from "./utils";
-import { move, takeAction } from "./state";
+import {
+  BattleState,
+  CardId,
+  Character,
+  isBoardItemCard,
+  isBoardItemCharacter,
+  isBoardItemInert,
+} from "./battle";
+import { assetUrl, Coordinate, getPlayerCoordinate, isAdjacent } from "./utils";
+import { move, takeAction, takeContent } from "./state";
 import { isCardEligible } from "./Card";
 
 export function GameBoard(props: {
@@ -11,30 +18,46 @@ export function GameBoard(props: {
   const battle = props.battleState.battle;
   const [selectedSquare, setSelectedSquare] = useState<Coordinate>();
 
+  const playerCoordinate = getPlayerCoordinate(props.battleState);
+
+  const backgroundImage = battle.background_image
+    ? assetUrl(battle.background_image)
+    : undefined;
   return (
-    <table className="game-board">
+    <table className="game-board" style={{ backgroundImage }}>
       <tbody>
         {battle.board.grid.members.map((row, y) => (
           <tr key={y}>
-            {row.map((col, x) => {
+            {row.map((cell, x) => {
               let image: string | undefined;
               let character: Character | undefined;
-              if (col?.Character !== undefined) {
-                character = battle.characters[col.Character];
+              let isPlayer;
+              let isInert = false;
+              let isClickable: boolean;
+              if (isBoardItemCharacter(cell)) {
+                character = battle.characters[cell.id];
                 if (character.image !== null) {
-                  image = `url(${assetPath(character.image)})`;
+                  image = assetUrl(character.image);
                 }
                 if (character.health == 0) {
-                  image = `url(${assetPath("skull.png")})`;
+                  image = assetUrl("skull.png");
                 }
+                isPlayer = props.battleState.character_id === cell.id;
+                isClickable = !isPlayer;
+              } else if (isBoardItemCard(cell)) {
+                image = assetUrl("card.png");
+                isPlayer = false;
+                isClickable = true;
+              } else if (isBoardItemInert(cell)) {
+                isPlayer = false;
+                isInert = true;
+                isClickable = false;
               }
               const curLocation: Coordinate = { x, y };
               const isSelectedSquare =
                 selectedSquare &&
                 selectedSquare.x === x &&
                 selectedSquare.y === y;
-              const isPlayer =
-                props.battleState.character_id === col?.Character;
 
               // Only ineligible if there is actively a card being dragged and that card isn't eligible.
               const isIneligible =
@@ -46,9 +69,11 @@ export function GameBoard(props: {
                 <td
                   key={x}
                   style={{
+                    border: isInert ? 0 : undefined,
                     borderColor: isSelectedSquare ? "red" : "black",
                     backgroundImage: image,
                     opacity: isIneligible ? 0.5 : 1,
+                    cursor: isClickable ? "pointer" : "default",
                   }}
                   onDragOver={(e) => {
                     if (props.draggedCard === undefined) {
@@ -75,19 +100,29 @@ export function GameBoard(props: {
                       } else {
                         setSelectedSquare(curLocation);
                       }
-                    } else {
-                      if (
-                        selectedSquare !== undefined &&
-                        isAdjacent(selectedSquare, curLocation)
-                      ) {
-                        const item =
-                          battle.board.grid.members[selectedSquare.y][
-                            selectedSquare.x
-                          ];
-                        if (item?.Character !== undefined) {
-                          setSelectedSquare(undefined);
-                          await move(item?.Character, curLocation);
-                        }
+                    } else if (
+                      isAdjacent(selectedSquare, curLocation) &&
+                      selectedSquare !== undefined
+                    ) {
+                      const item =
+                        battle.board.grid.members[selectedSquare.y][
+                          selectedSquare.x
+                        ];
+                      if (isBoardItemCharacter(item)) {
+                        setSelectedSquare(undefined);
+                        await move(item.id, curLocation);
+                      }
+                    } else if (isAdjacent(curLocation, playerCoordinate)) {
+                      if (isBoardItemCard(cell)) {
+                        await takeContent(
+                          props.battleState.character_id,
+                          curLocation,
+                          {
+                            card: cell.id,
+                          },
+                        );
+                      } else if (isBoardItemCharacter(cell)) {
+                        console.log("Trying to take content from", cell.id);
                       }
                     }
                   }}

@@ -1,0 +1,87 @@
+{
+    "title": "Introduction",
+    "description": "A curious forest",
+    "default_hand_size": 1,
+    "introduction": [
+        { "h1": "..." },
+        {
+            "p": "You wake up in a strange forest. The trees are tall and the air is thick with the smell of pine. You can hear the sound of water flowing nearby, and the chirping of birds fills the air."
+        },
+        {
+            "p": "You're confused and disoriented. You don't remember how you got here, but feel somehow relaxed."
+        }
+    ],
+    "board": {
+        "width": 6,
+        "height": 6,
+        "background": {
+            "image": "forest-glen.png"
+        },
+        "cells": [
+            {
+                "inert": true,
+                "location": [0, 0]
+            },
+            {
+                "inert": true,
+                "location": [0, 5]
+            },
+            {
+                "inert": true,
+                "location": [5, 0]
+            },
+            {
+                "inert": true,
+                "location": [5, 5]
+            }
+        ]
+    },
+    "effects": [],
+    "objects": [
+        {
+            "id": 0,
+            "name": "Key",
+            "description": "A small, unassuming key.",
+            "flavor": "I wonder what this goes to?",
+            "image": "key.png"
+        }
+    ],
+    "teams": [
+        {
+            "name": "World",
+            "members": [
+                {
+                    "name": "Chest",
+                    "race": "Machine",
+                    "image": "chest.png",
+                    "base_health": 5,
+                    "hand_size": 0,
+                    "cards": [],
+                    "location": [1, 0],
+                    "movement": 0,
+                    "contains": [
+                        {
+                            "object": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Hero",
+            "members": [
+                {
+                    "name": "Hero",
+                    "is_player": true,
+                    "race": "Human",
+                    "image": "captain.png",
+                    "base_health": 1,
+                    "hand_size": 0,
+                    "cards": [],
+                    "location": [4, 3],
+                    "movement": 3
+                }
+            ]
+        }
+    ]
+}

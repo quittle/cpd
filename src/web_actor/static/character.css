@@ -1,6 +1,28 @@
 .character {
   background: #ededed;
   padding: 1em;
+
+  &:not(:has(.character-end-turn)) {
+    width: 10em;
+    h3 {
+      text-align: center;
+    }
+  }
+
+  & .effects {
+    .effect {
+      width: 2em;
+      height: 2em;
+      display: inline-block;
+      background-size: cover;
+      border-radius: 100%;
+    }
+  }
+
+  & .open {
+    width: 100%;
+    cursor: pointer;
+  }
 }
 
 .character-end-turn {

@@ -1,10 +1,11 @@
 use std::fmt::Display;
 
+use schemars::JsonSchema;
 use serde::Serialize;
 
 use crate::TemplateEntry;
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, JsonSchema)]
 pub enum BattleTextEntry {
     Id,
     Attack,

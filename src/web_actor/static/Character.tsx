@@ -1,18 +1,28 @@
 import React from "react";
-import { Battle, CardId, Character, CharacterId } from "./battle";
-import { assetPath } from "./utils";
+import { BattleState, CardId, Character, CharacterId, Effect } from "./battle";
+import { assetUrl, assetPath, countEntries } from "./utils";
 import { pass, takeAction } from "./state";
 import { isCardEligible } from "./Card";
 import MeterBar from "./MeterBar";
+import Badge from "./Badge";
+import Container from "./Container";
 
 export default function Character(props: {
   isPlayer: boolean;
   characterId: CharacterId;
   draggedCard: CardId | undefined;
-  battle: Battle;
+  battleState: BattleState;
 }) {
-  const { isPlayer, characterId, draggedCard, battle } = props;
+  const { isPlayer, characterId, draggedCard, battleState } = props;
+  const { battle } = battleState;
+
   const character = battle.characters[characterId];
+
+  const [contentsOpened, setContentsOpened] = React.useState(false);
+
+  const effects: [Effect, number][] = Array.from(
+    countEntries(character.effects),
+  ).map(([id, count]) => [battle.effects[id], count]);
 
   // Only ineligible if there is actively a card being dragged and that card isn't eligible.
   const isIneligible =
@@ -48,6 +58,19 @@ export default function Character(props: {
         backgroundColor="black"
         textColor="white"
       />
+      <div className="effects">
+        {effects.map(([effect, count]) => (
+          <Badge key={effect.id} count={count} showCountBelowTwo={false}>
+            <span
+              className="effect"
+              title={effect.name}
+              style={{
+                backgroundImage: assetUrl(effect.image),
+              }}
+            />
+          </Badge>
+        ))}
+      </div>
       {character.image ? (
         <img
           src={assetPath(character.image)}
@@ -65,12 +88,30 @@ export default function Character(props: {
         </button>
       ) : null}
       <h3>{character.name}</h3>
+      {character.contains.length > 0 ? (
+        <button
+          className="open"
+          onClick={() => {
+            setContentsOpened(true);
+          }}
+        >
+          Open
+        </button>
+      ) : null}
       {isPlayer
         ? `Remaining actions: ${"🔵".repeat(character.remaining_actions)}`
         : null}
       <div>
         Movement: <b>{character.movement}</b>
       </div>
+      {contentsOpened ? (
+        <Container
+          characterId={characterId}
+          battleState={battleState}
+          contents={character.contains}
+          onClose={() => setContentsOpened(false)}
+        />
+      ) : null}
     </div>
   );
 }

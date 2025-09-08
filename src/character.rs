@@ -3,6 +3,7 @@ use std::{
     ops::{Sub, SubAssign},
 };
 
+use schemars::JsonSchema;
 use serde::Serialize;
 
 use crate::*;
@@ -11,7 +12,8 @@ type HandSize = usize;
 
 DeclareWrappedType!(CharacterId, id, usize);
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub enum CharacterRace {
     Human,
     Machine,
@@ -35,7 +37,8 @@ impl SubAssign<Attack> for Health {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct Character {
     pub id: CharacterId,
     pub name: String,
@@ -48,6 +51,7 @@ pub struct Character {
     pub max_health: Health,
     pub remaining_actions: u64,
     pub hand_size: HandSize,
+    pub contains: Vec<Content>,
     pub image: Option<String>,
     pub movement: u64,
     pub default_movement: u64,
@@ -80,6 +84,10 @@ impl Character {
 
     pub fn heal(&mut self, healing: Health) {
         self.health = min(self.health + healing, self.max_health);
+    }
+
+    pub fn reach_distance(&self) -> GridDimension {
+        1
     }
 }
 

@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
 
+use schemars::JsonSchema;
 use serde::Serialize;
 
 pub trait TemplateRenderer<TypeId> {
@@ -10,7 +11,8 @@ pub trait TemplateRenderer<TypeId> {
     fn render(&self, type_id: &TypeId, string: &str) -> String;
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub enum TemplateEntry<TypeId> {
     Text(String),
     Typed(TypeId, String),

@@ -1,79 +1,48 @@
-export enum CharacterRace {
-  Human = "Human",
-}
+export * from "./battle-schema.generated";
+import {
+  BoardItem,
+  CardId,
+  CharacterId,
+  StoryCardEntry,
+  TemplateEntryForBattleTextEntry,
+  Target,
+  BoardItemType,
+} from "./battle-schema.generated";
 
-export type CardId = number;
-export type CharacterId = number;
+export { Target as ActionTarget };
 
-export interface Character {
-  id: CharacterId;
-  name: string;
-  race: CharacterRace;
-  hand: CardId[];
-  deck: CardId[];
-  health: number;
-  max_health: number;
-  hand_size: number;
-  remaining_actions: number;
-  image: string | null;
-  movement: number;
-}
-
-export interface Team {
-  id: number;
-  name: string;
-}
-
-export type BattleType = "Id" | "Attack" | "Damage";
-
-export type TypedText = { Text: string } | { Typed: [BattleType, string] };
-
+export type TypedText = TemplateEntryForBattleTextEntry;
 export type BattleHistoryEntry = TypedText[];
-
-export enum ActionTarget {
-  Me = "Me",
-  Others = "Others",
-  Any = "Any",
-}
-
-export type CardAction =
-  | { Damage: { target: ActionTarget; amount: number } }
-  | { Heal: { target: ActionTarget; amount: number } };
-
-export interface Card {
-  id: CardId;
-  name: string;
-  description: string;
-  flavor?: string;
-  range: number;
-  actions: CardAction[];
-}
-
-export type StoryCardEntry = { h1: string } | { p: string };
-
 export type StoryCard = StoryCardEntry[];
 
-export type BoardItem = { Character: CharacterId };
+export type BoardItemCharacter = BoardItem & {
+  id: CharacterId;
+  type: BoardItemType.Character;
+};
 
-export interface Board {
-  grid: {
-    members: Array<Array<BoardItem | null>>;
-    width: number;
-    height: number;
-  };
+export type BoardItemCard = BoardItem & {
+  id: CardId;
+  type: BoardItemType.Card;
+};
+
+export type BoardItemInert = BoardItem & {
+  type: BoardItemType.Inert;
+};
+
+export function isBoardItemCharacter(
+  item: BoardItem | null | undefined,
+): item is BoardItemCharacter {
+  return item instanceof Object && item.type === BoardItemType.Character;
 }
 
-export interface Battle {
-  characters: Record<string, Character>;
-  teams: Team[];
-  introduction?: StoryCard;
-  history: BattleHistoryEntry[];
-  round: number;
-  cards: Record<string, Card>;
-  board: Board;
+export function isBoardItemCard(
+  item: BoardItem | null | undefined,
+): item is BoardItemCard {
+  return item instanceof Object && item.type === BoardItemType.Card;
 }
 
-export interface BattleState {
-  character_id: number;
-  battle: Battle;
+export function isBoardItemInert(
+  item: BoardItem | null | undefined,
+): item is BoardItemInert {
+  return item instanceof Object && item.type === BoardItemType.Inert;
 }

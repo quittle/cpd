@@ -1,0 +1,95 @@
+{
+    "title": "Poison Escape",
+    "description": "Stay away!!!",
+    "default_hand_size": 1,
+    "board": {
+        "width": 6,
+        "height": 6
+    },
+    "effects": [
+        {
+            "id": 0,
+            "name": "Poison",
+            "description": "Deals damage over time",
+            "image": "poison.png",
+            "triggers": ["turn_start"],
+            "actions": [
+                {
+                    "type": "damage",
+                    "target": "self",
+                    "amount": 1,
+                    "area": 0
+                },
+                {
+                    "type": "reduce_effect",
+                    "target": "self",
+                    "effect": 0,
+                    "chance": 0.25
+                }
+            ]
+        }
+    ],
+    "cards": [
+        {
+            "id": 0,
+            "name": "Poison Arrow",
+            "description": "Poisons targets",
+            "flavor": "Poison makes the heart grow... weaker?",
+            "range": 5,
+            "actions": [
+                {
+                    "type": "effect",
+                    "target": "any",
+                    "effect": 0
+                }
+            ]
+        },
+        {
+            "id": 1,
+            "name": "Poke",
+            "description": "Deal 1 damage",
+            "flavor": "I guess it'll do something",
+            "range": 1,
+            "actions": [
+                {
+                    "type": "damage",
+                    "target": "other",
+                    "amount": 1
+                }
+            ]
+        }
+    ],
+    "teams": [
+        {
+            "name": "World",
+            "members": [
+                {
+                    "name": "Bad Guy",
+                    "race": "Human",
+                    "image": "long-neck.png",
+                    "base_health": 5,
+                    "hand_size": 1,
+                    "cards": [1],
+                    "location": [0, 0],
+                    "movement": 1
+                }
+            ]
+        },
+        {
+            "name": "Hero",
+            "members": [
+                {
+                    "name": "Hero",
+                    "is_player": true,
+                    "race": "Human",
+                    "image": "captain.png",
+                    "base_health": 1,
+                    "hand_size": 1,
+                    "cards": [0],
+                    "location": [4, 3],
+                    "movement": 3
+                }
+            ]
+        }
+    ]
+}

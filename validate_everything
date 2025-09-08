@@ -3,11 +3,17 @@
 set -eu
 set -o pipefail
 
+source ~/.nvm/nvm.sh
+
+nvm use
+
 npm ci
-npm run lint
 
 cargo fmt --all
 cargo build --all
+cargo run --bin codegen
 cargo test --all
 cargo clippy --all-features --fix --allow-dirty --allow-no-vcs
 cargo doc
+
+npm run check-all

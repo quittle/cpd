@@ -1,0 +1,20 @@
+.container {
+  & .header {
+    display: flex;
+
+    & img {
+      width: 5em;
+      height: 5em;
+    }
+  }
+
+  & .contents {
+    & button {
+      border: 1px solid #000;
+      background-repeat: no-repeat;
+      background-size: contain;
+      width: 36px;
+      height: 36px;
+    }
+  }
+}

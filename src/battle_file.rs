@@ -1,9 +1,11 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 pub type LifeNumber = u64;
 pub type CardId = usize;
 pub type EffectId = usize;
 pub type HandSize = usize;
+pub type ObjectId = usize;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
@@ -16,13 +18,22 @@ pub struct Battle {
     pub default_movement: Option<u64>,
     #[serde(default)]
     pub effects: Vec<Effect>,
+    #[serde(default)]
     pub cards: Vec<Card>,
+    #[serde(default)]
+    pub objects: Vec<Object>,
     pub teams: Vec<Team>,
+}
+
+fn map_serde_error(source: &str, err: serde_json::Error) -> String {
+    let line = source.lines().nth(err.line() - 1).unwrap_or("");
+    err.to_string() + "\\n" + line
 }
 
 impl Battle {
     pub fn parse_from_str(data: &str) -> Result<Self, String> {
-        let battle: Battle = serde_json::from_str::<Battle>(data).map_err(|err| err.to_string())?;
+        let battle: Battle =
+            serde_json::from_str::<Battle>(data).map_err(|err| map_serde_error(data, err))?;
 
         for (index, card) in battle.cards.iter().enumerate() {
             if card.id != index {
@@ -35,6 +46,9 @@ impl Battle {
                     CardAction::Heal { target, .. } => target,
                     CardAction::GainAction { target, .. } => target,
                     CardAction::Move { target, .. } => target,
+                    CardAction::Effect { target, .. } => target,
+                    CardAction::RemoveEffect { target, .. } => target,
+                    CardAction::ReduceEffect { target, .. } => target,
                 };
                 if target != &Target::Me && card.range.is_none() {
                     return Err(format!(
@@ -63,12 +77,81 @@ impl Battle {
 
 pub type StoryCard = Vec<StoryCardEntry>;
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-#[serde(deny_unknown_fields)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub enum StoryCardEntry {
     H1(String),
     P(String),
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged, deny_unknown_fields)]
+pub enum LocationRange {
+    Point(usize, usize),
+    Range((usize, usize), (usize, usize)),
+}
+
+impl LocationRange {
+    pub fn iter(&self) -> LocationRangeIter {
+        match self {
+            LocationRange::Point(x, y) => LocationRangeIter {
+                start: (*x, *y),
+                end: (*x, *y),
+                current: None,
+            },
+            LocationRange::Range((start_x, start_y), (end_x, end_y)) => LocationRangeIter {
+                start: (*start_x, *start_y),
+                end: (*end_x, *end_y),
+                current: None,
+            },
+        }
+    }
+}
+
+pub struct LocationRangeIter {
+    start: (usize, usize),
+    end: (usize, usize),
+    current: Option<(usize, usize)>,
+}
+
+impl Iterator for LocationRangeIter {
+    type Item = (usize, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(cur @ (cur_x, cur_y)) = self.current {
+            if cur == self.end {
+                return None;
+            }
+            if cur_x < self.end.0 {
+                self.current = Some((cur_x + 1, cur_y));
+            } else {
+                self.current = Some((self.start.0, cur_y + 1));
+            }
+        } else {
+            self.current = Some(self.start);
+        }
+        self.current
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged, rename_all = "snake_case")]
+#[serde(deny_unknown_fields)]
+pub enum Cell {
+    Card {
+        card: CardId,
+        location: LocationRange,
+    },
+    Inert {
+        inert: bool,
+        location: LocationRange,
+    },
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct BoardBackground {
+    pub image: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -76,6 +159,8 @@ pub enum StoryCardEntry {
 pub struct Board {
     pub width: usize,
     pub height: usize,
+    pub background: Option<BoardBackground>,
+    pub cells: Option<Vec<Cell>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -83,6 +168,12 @@ pub struct Board {
 pub struct Team {
     pub name: String,
     pub members: Vec<TeamMember>,
+}
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(deny_unknown_fields, rename_all = "snake_case")]
+pub enum Content {
+    Card(CardId),
+    Object(ObjectId),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -95,6 +186,8 @@ pub struct TeamMember {
     pub cards: Vec<CardId>,
     #[serde(default)]
     pub effects: Vec<EffectId>,
+    #[serde(default)]
+    pub contains: Vec<Content>,
     pub hand_size: Option<HandSize>,
     #[serde(default)]
     pub is_player: bool,
@@ -111,8 +204,7 @@ pub enum Race {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-#[serde(rename_all = "snake_case")]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub enum Target {
     #[serde(alias = "self")]
     Me,
@@ -123,8 +215,7 @@ pub enum Target {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-#[serde(untagged)]
-#[serde(deny_unknown_fields)]
+#[serde(untagged, deny_unknown_fields)]
 pub enum MaybeU64Range {
     Range(u64, u64),
     Absolute(u64),
@@ -136,20 +227,20 @@ pub struct Effect {
     pub id: EffectId,
     pub name: String,
     pub description: String,
-    pub triggers: Vec<Trigger>,
+    pub image: Option<String>,
+    pub triggers: Option<Vec<Trigger>>,
     pub actions: Vec<CardAction>,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-#[serde(deny_unknown_fields)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub enum Trigger {
     Death,
+    TurnStart,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-#[serde(tag = "type", rename_all = "snake_case")]
-#[serde(deny_unknown_fields)]
+#[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum CardAction {
     Damage {
         target: Target,
@@ -169,6 +260,22 @@ pub enum CardAction {
         target: Target,
         amount: MaybeU64Range,
     },
+    Effect {
+        target: Target,
+        effect: EffectId,
+        chance: Option<f64>,
+    },
+    RemoveEffect {
+        target: Target,
+        effect: EffectId,
+        chance: Option<f64>,
+    },
+    ReduceEffect {
+        target: Target,
+        effect: EffectId,
+        amount: Option<u64>,
+        chance: Option<f64>,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -180,6 +287,16 @@ pub struct Card {
     pub flavor: Option<String>,
     pub actions: Vec<CardAction>,
     pub range: Option<u64>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(deny_unknown_fields)]
+pub struct Object {
+    pub id: ObjectId,
+    pub name: String,
+    pub description: String,
+    pub flavor: Option<String>,
+    pub image: Option<String>,
 }
 
 #[cfg(test)]
@@ -198,7 +315,20 @@ mod tests {
                 { "h1": "Heading" },
                 { "p": "Paragraph" }
             ],
-            "board": { "width": 1, "height": 1 },
+            "board": {
+                "width": 1,
+                "height": 1,
+                "cells": [
+                    {
+                        "card": 0,
+                        "location": [0, 0]
+                    },
+                    {
+                        "inert": true,
+                        "location": [0, 1]
+                    }
+                ]
+            },
             "effects": [
                 {
                     "id": 0,

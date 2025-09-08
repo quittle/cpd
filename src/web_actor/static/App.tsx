@@ -62,7 +62,7 @@ export default function App() {
             isPlayer={true}
             characterId={characterId}
             draggedCard={dragState}
-            battle={battle}
+            battleState={battleState}
           />
           {Object.values(battle.characters)
             .filter((character) => character.id !== characterId)
@@ -72,7 +72,7 @@ export default function App() {
                 key={character.id}
                 characterId={character.id}
                 draggedCard={dragState}
-                battle={battle}
+                battleState={battleState}
               />
             ))}
         </div>
@@ -109,6 +109,9 @@ export default function App() {
                         await defaultAction();
                       }
                     }}
+                    enabled={
+                      battle.characters[characterId].remaining_actions > 0
+                    }
                     hasDefaultAction={defaultAction !== undefined}
                   />
                 </li>

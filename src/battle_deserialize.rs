@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::{
     Actor, Battle, Board, BoardItem, CardId, Character, CharacterId, CharacterRace, DumbActor,
-    EffectId, Health, RandomProvider, Team, TeamId, TerminalActor, U64Range, battle_file,
+    EffectId, Health, ObjectId, RandomProvider, Team, TeamId, TerminalActor, U64Range, battle_file,
     web_actor::WebActor,
 };
 use futures::future::join_all;
@@ -14,6 +14,21 @@ pub fn normalize_maybe_u64_range(life_number_range: &battle_file::MaybeU64Range)
     }
 }
 
+fn validate_ids<T>(entries: &[T], id_extractor: impl Fn(&T) -> usize) -> Result<(), String>
+where
+    T: std::fmt::Debug,
+{
+    for (index, entry) in entries.iter().enumerate() {
+        if index != id_extractor(entry) {
+            return Err(format!(
+                "ID mismatch at index {} but found ({:?})",
+                index, entry,
+            ));
+        }
+    }
+    Ok(())
+}
+
 impl Battle {
     pub async fn deserialize(
         data: &str,
@@ -22,7 +37,32 @@ impl Battle {
     ) -> Result<Self, String> {
         let battle = battle_file::Battle::parse_from_str(data)?;
 
+        validate_ids(&battle.cards, |entry| entry.id)?;
+        validate_ids(&battle.effects, |entry| entry.id)?;
+        validate_ids(&battle.objects, |entry| entry.id)?;
+
         let mut board = Board::new(battle.board.width, battle.board.height);
+
+        for cell in &battle.board.cells.unwrap_or_default() {
+            match cell {
+                battle_file::Cell::Card { card, location } => {
+                    for (x, y) in location.iter() {
+                        if !board.grid.is_valid(x, y) {
+                            return Err(format!("Invalid card position: {x}, {y}"));
+                        }
+                        board.grid.set(x, y, BoardItem::Card(CardId::new(*card)));
+                    }
+                }
+                battle_file::Cell::Inert { location, .. } => {
+                    for (x, y) in location.iter() {
+                        if !board.grid.is_valid(x, y) {
+                            return Err(format!("Invalid inert position: {x}, {y}"));
+                        }
+                        board.grid.set(x, y, BoardItem::Inert);
+                    }
+                }
+            }
+        }
 
         let max_team_size = battle
             .teams
@@ -45,6 +85,27 @@ impl Battle {
                     ) {
                         return Err(format!("Multiple entries found at {x}, {y}"));
                     }
+
+                    for item in &member.contains {
+                        match item {
+                            battle_file::Content::Card(id) => {
+                                if battle.cards.len() <= *id {
+                                    return Err(format!(
+                                        "Invalid card id {id} for {}",
+                                        member.name
+                                    ));
+                                }
+                            }
+                            battle_file::Content::Object(id) => {
+                                if battle.objects.len() <= *id {
+                                    return Err(format!(
+                                        "Invalid object id {id} for {}",
+                                        member.name
+                                    ));
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -57,6 +118,10 @@ impl Battle {
             introduction: battle.introduction,
             random_provider,
             default_turn_actions: 1,
+            background_image: battle
+                .board
+                .background
+                .and_then(|background| background.image),
             characters: battle
                 .teams
                 .iter()
@@ -95,6 +160,18 @@ impl Battle {
                             default_movement: member
                                 .movement
                                 .unwrap_or(battle.default_movement.unwrap_or(0)),
+                            contains: member
+                                .contains
+                                .iter()
+                                .map(|content| match content {
+                                    battle_file::Content::Card(id) => {
+                                        crate::Content::Card(CardId::new(*id))
+                                    }
+                                    battle_file::Content::Object(id) => {
+                                        crate::Content::Object(ObjectId::new(*id))
+                                    }
+                                })
+                                .collect(),
                         },
                     )
                 })
@@ -109,6 +186,12 @@ impl Battle {
                 .iter()
                 .enumerate()
                 .map(|(index, effect)| (EffectId::new(index), deserialize_effect(effect)))
+                .collect(),
+            objects: battle
+                .objects
+                .iter()
+                .enumerate()
+                .map(|(index, object)| (ObjectId::new(index), deserialize_object(object)))
                 .collect(),
             teams: battle
                 .teams
@@ -196,7 +279,41 @@ fn deserialize_card_action(card_action: &battle_file::CardAction) -> crate::Card
             target: deserialize_target(target),
             amount: normalize_maybe_u64_range(amount),
         },
+        battle_file::CardAction::Effect {
+            target,
+            effect,
+            chance,
+        } => crate::CardAction::Effect {
+            target: deserialize_target(target),
+            effect: EffectId::new(*effect),
+            chance: deserialize_chance(chance),
+        },
+        battle_file::CardAction::RemoveEffect {
+            target,
+            effect,
+            chance,
+        } => crate::CardAction::RemoveEffect {
+            target: deserialize_target(target),
+            effect: EffectId::new(*effect),
+            chance: deserialize_chance(chance),
+        },
+        battle_file::CardAction::ReduceEffect {
+            target,
+            effect,
+            amount,
+            chance,
+        } => crate::CardAction::ReduceEffect {
+            target: deserialize_target(target),
+            effect: EffectId::new(*effect),
+            amount: amount.unwrap_or(1),
+            chance: deserialize_chance(chance),
+        },
     }
+}
+
+fn deserialize_chance(chance: &Option<f64>) -> crate::Chance {
+    let real_chance = chance.unwrap_or(1f64);
+    crate::Chance::new(((u32::MAX as f64) * real_chance) as u32)
 }
 
 fn deserialize_effect(effect: &battle_file::Effect) -> crate::Effect {
@@ -204,8 +321,22 @@ fn deserialize_effect(effect: &battle_file::Effect) -> crate::Effect {
         id: crate::EffectId::new(effect.id),
         name: effect.name.clone(),
         description: effect.description.clone(),
+        image: effect.image.clone(),
         actions: effect.actions.iter().map(deserialize_card_action).collect(),
-        triggers: effect.triggers.iter().map(deserailize_trigger).collect(),
+        triggers: effect
+            .triggers
+            .as_ref()
+            .map(|triggers| triggers.iter().map(deserailize_trigger).collect())
+            .unwrap_or_default(),
+    }
+}
+
+fn deserialize_object(object: &battle_file::Object) -> crate::Object {
+    crate::Object {
+        id: crate::ObjectId::new(object.id),
+        name: object.name.clone(),
+        description: object.description.clone(),
+        image: object.image.clone(),
     }
 }
 
@@ -231,5 +362,19 @@ fn deserialize_target(target: &battle_file::Target) -> crate::Target {
 fn deserailize_trigger(trigger: &battle_file::Trigger) -> crate::Trigger {
     match trigger {
         battle_file::Trigger::Death => crate::Trigger::Death,
+        battle_file::Trigger::TurnStart => crate::Trigger::TurnStart,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{Chance, battle_deserialize::deserialize_chance};
+
+    #[test]
+    fn test_deserialize_chance() {
+        assert_eq!(deserialize_chance(&None), Chance::new(u32::MAX));
+        assert_eq!(deserialize_chance(&Some(1f64)), Chance::new(u32::MAX));
+        assert_eq!(deserialize_chance(&Some(0f64)), Chance::new(0));
+        assert_eq!(deserialize_chance(&Some(0.5)), Chance::new(u32::MAX / 2));
     }
 }

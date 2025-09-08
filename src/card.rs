@@ -1,12 +1,21 @@
+use crate::{DeclareWrappedType, EffectId, RandomProvider, battle_file};
+use schemars::JsonSchema;
 use serde::Serialize;
-
-use crate::{DeclareWrappedType, RandomProvider, battle_file};
 
 DeclareWrappedType!(CardId, id, battle_file::CardId);
 
 pub type LifeNumber = battle_file::LifeNumber;
 
-#[derive(Debug, PartialEq, Clone, Serialize)]
+DeclareWrappedType!(Chance, chance, u32);
+
+impl Chance {
+    pub fn resolve(&self, random_provider: &dyn RandomProvider) -> bool {
+        random_provider.pick_linear_u32(0, u32::MAX) <= self.chance
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct U64Range(pub u64, pub u64);
 
 impl U64Range {
@@ -15,7 +24,8 @@ impl U64Range {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub enum Target {
     Me,
     Others,
@@ -29,7 +39,8 @@ impl Target {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub enum CardAction {
     Damage {
         target: Target,
@@ -49,6 +60,22 @@ pub enum CardAction {
         target: Target,
         amount: U64Range,
     },
+    Effect {
+        target: Target,
+        effect: EffectId,
+        chance: Chance,
+    },
+    RemoveEffect {
+        target: Target,
+        effect: EffectId,
+        chance: Chance,
+    },
+    ReduceEffect {
+        target: Target,
+        effect: EffectId,
+        amount: u64,
+        chance: Chance,
+    },
 }
 
 impl CardAction {
@@ -58,11 +85,15 @@ impl CardAction {
             Self::Heal { target, .. } => target,
             Self::GainAction { target, .. } => target,
             Self::Move { target, .. } => target,
+            Self::Effect { target, .. } => target,
+            Self::RemoveEffect { target, .. } => target,
+            Self::ReduceEffect { target, .. } => target,
         }
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct Card {
     pub id: CardId,
     pub name: String,
