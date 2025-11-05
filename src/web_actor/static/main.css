@@ -1,3 +1,4 @@
+@import "colors.css";
 @import "app.css";
 @import "badge.css";
 @import "battle-history.css";
@@ -6,9 +7,15 @@
 @import "container.css";
 @import "game-board.css";
 @import "meter-bar.css";
+@import "health-bar.css";
+@import "tooltip.css";
+@import "effect.css";
 
 :root {
   --font-family-pixelated: "Jersey 15", sans-serif;
+
+  --padding-s: 0.5em;
+  --padding-m: 0.75em;
 }
 
 html {
@@ -17,6 +24,7 @@ html {
 
 * {
   image-rendering: pixelated;
+  box-sizing: border-box;
 }
 
 button {

@@ -1,22 +1,45 @@
 .character {
   background: #ededed;
-  padding: 1em;
+  min-width: 200px;
+
+  --character-horizontal-padding: 0.75em;
+  --health-bar-horizontal-padding: var(--character-horizontal-padding);
+
+  & > img {
+    padding: 0 25%;
+    display: block;
+    background: radial-gradient(
+      circle at bottom,
+      rgba(0, 0, 0, 0.2),
+      white 67%
+    );
+  }
 
   &:not(:has(.character-end-turn)) {
     width: 10em;
-    h3 {
-      text-align: center;
-    }
+  }
+
+  & .bottom {
+    padding: var(--character-horizontal-padding);
+  }
+
+  & .line-1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  & .movement {
+    background-position: right;
+    background-size: contain;
+    background-repeat: no-repeat;
+    padding-right: 1.25em;
+
+    image-rendering: auto;
   }
 
   & .effects {
-    .effect {
-      width: 2em;
-      height: 2em;
-      display: inline-block;
-      background-size: cover;
-      border-radius: 100%;
-    }
+    text-align: right;
   }
 
   & .open {

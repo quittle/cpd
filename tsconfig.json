@@ -3,6 +3,7 @@
         "jsx": "react",
         "target": "esnext",
         "moduleResolution": "bundler",
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "types": ["vite/client"]
     }
 }

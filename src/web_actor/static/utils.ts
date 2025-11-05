@@ -61,7 +61,11 @@ export function assetPath(rawAssetPath: string): string {
 
 // Like `assetPath()` but returns a CSS url() string.
 export function assetUrl(rawAssetPath: string): string {
-  return `url(${assetPath(rawAssetPath)})`;
+  return cssUrl(assetPath(rawAssetPath));
+}
+
+export function cssUrl(path: string): string {
+  return `url(${path})`;
 }
 
 export interface Coordinate {
@@ -87,10 +91,24 @@ export function countEntries<T>(entries: readonly T[]): Map<T, number> {
   return ret;
 }
 
-export function getPlayerCoordinate(battleState: BattleState): Coordinate {
+export function getPlayerCoordinate(
+  battleState: BattleState,
+): Coordinate | null {
   return getCharacterCoordinate(battleState.battle, battleState.character_id);
 }
 
+export function requireCharacterCoordinate(
+  battle: Battle,
+  characterId: CharacterId,
+): Coordinate {
+  const coordinate = getCharacterCoordinate(battle, characterId);
+  if (coordinate === null) {
+    throw new Error(
+      `Character "${battle.characters[characterId].name}" (${characterId}) not found on board`,
+    );
+  }
+  return coordinate;
+}
 export function getCharacterCoordinate(
   battle: Battle,
   characterId: CharacterId,
@@ -105,7 +123,7 @@ export function getCharacterCoordinate(
     }
   }
 
-  throw new Error(`Character {characterId} not found on board`);
+  return null;
 }
 
 export function describeContent(
@@ -114,13 +132,13 @@ export function describeContent(
 ): { key: React.Key; assetUrl: string } {
   if ("Card" in content) {
     return {
-      key: `C{content.Card}`,
+      key: `C${content.Card}`,
       assetUrl: assetUrl("card.png"),
     };
   }
   if ("Object" in content) {
     return {
-      key: `O{content.Object}`,
+      key: `O${content.Object}`,
       assetUrl: assetUrl(battle.objects[content.Object].image),
     };
   }

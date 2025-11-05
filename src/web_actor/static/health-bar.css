@@ -1,0 +1,15 @@
+.health-bar {
+  text-align: center;
+  position: relative;
+  font-size: 0.75em;
+  transition: font-size 0.2s ease-in-out;
+
+  &:hover {
+    font-size: initial;
+  }
+
+  justify-content: space-between;
+  display: flex;
+  align-items: center;
+  padding: 0.25em var(--health-bar-horizontal-padding, 0.75em);
+}

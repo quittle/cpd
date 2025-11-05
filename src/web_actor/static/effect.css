@@ -1,0 +1,8 @@
+.effect {
+  width: 2em;
+  height: 2em;
+  display: inline-block;
+  background-size: cover;
+  border-radius: 100%;
+  border: 2px solid black;
+}
