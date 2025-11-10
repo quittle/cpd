@@ -1,7 +1,5 @@
 use cpd::web_actor::BattleState;
-use schemars::SchemaGenerator;
-use schemars::r#gen::SchemaSettings;
-use schemars::schema::Schema;
+use schemars::generate::SchemaSettings;
 use std::env;
 use std::io::{Error, Write};
 use std::process::{Command, Stdio};
@@ -32,20 +30,22 @@ fn fix_typescript(typescript_bytes: &[u8]) -> Vec<u8> {
 }
 
 fn main() -> Result<(), Error> {
-    let mut schema =
-        SchemaGenerator::new(SchemaSettings::openapi3()).root_schema_for::<BattleState>();
-    let mut schemas = schema.definitions;
-    schemas.insert(
-        schema.schema.metadata().title.take().unwrap(),
-        Schema::Object(schema.schema),
-    );
-    let battle_json = serde_json::json!({
-        "openapi": "3.0.0",
-        "components": {
-            "schemas": schemas
-        }
-    });
-    let json_schema = serde_json::to_string_pretty(&battle_json)?;
+    let mut schema = SchemaSettings::openapi3()
+        .into_generator()
+        .into_root_schema_for::<BattleState>();
+
+    schema
+        .ensure_object()
+        .insert("openapi".into(), "3.0.0".into());
+
+    let title = schema.ensure_object()["title"].to_string();
+    let schema_copy = schema.as_value().clone();
+    schema.ensure_object()["components"]["schemas"]
+        .as_object_mut()
+        .unwrap()
+        .insert(title, schema_copy);
+
+    let json_schema = serde_json::to_string_pretty(&schema)?;
 
     let out_file = env::current_dir()?
         .join("src")

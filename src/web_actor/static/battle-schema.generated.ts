@@ -9,6 +9,11 @@ export type paths = Record<string, never>;
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** BattleState */
+        "\"BattleState\"": {
+            battle: components["schemas"]["Battle"];
+            character_id: components["schemas"]["CharacterId"];
+        };
         Battle: {
             background_image?: string | null;
             board: components["schemas"]["Board"];
@@ -23,7 +28,7 @@ export interface components {
             effects: {
                 [key: string]: components["schemas"]["Effect"];
             };
-            history: components["schemas"]["TemplateEntry_for_BattleTextEntry"][][];
+            history: components["schemas"]["TemplateEntry"][][];
             introduction?: components["schemas"]["StoryCardEntry"][] | null;
             objects: {
                 [key: string]: components["schemas"]["Object"];
@@ -32,26 +37,22 @@ export interface components {
             round: number;
             teams: components["schemas"]["Team"][];
         };
-        BattleState: {
-            battle: components["schemas"]["Battle"];
-            character_id: components["schemas"]["CharacterId"];
-        };
         /** @enum {string} */
         BattleTextEntry: BattleTextEntry;
         Board: {
-            grid: components["schemas"]["Grid_for_BoardItem"];
+            grid: components["schemas"]["Grid"];
         };
         BoardItem: {
             id: components["schemas"]["CharacterId"];
-            /** @enum {string} */
-            type: BoardItemType;
+            /** @constant */
+            type: "Character";
         } | {
             id: components["schemas"]["CardId"];
-            /** @enum {string} */
-            type: BoardItemType;
+            /** @constant */
+            type: "Card";
         } | {
-            /** @enum {string} */
-            type: BoardItemType;
+            /** @constant */
+            type: "Inert";
         };
         Card: {
             actions: components["schemas"]["CardAction"][];
@@ -149,7 +150,7 @@ export interface components {
         };
         /** Format: uint */
         EffectId: number;
-        Grid_for_BoardItem: {
+        Grid: {
             /** Format: uint */
             height: number;
             members: (components["schemas"]["BoardItem"] | null)[][];
@@ -179,7 +180,7 @@ export interface components {
         };
         /** Format: uint64 */
         TeamId: number;
-        TemplateEntry_for_BattleTextEntry: {
+        TemplateEntry: {
             Text: string;
         } | {
             Typed: [
@@ -200,8 +201,8 @@ export interface components {
     headers: never;
     pathItems: never;
 }
+export type BattleState = components['schemas']['"BattleState"'];
 export type Battle = components['schemas']['Battle'];
-export type BattleState = components['schemas']['BattleState'];
 export type Board = components['schemas']['Board'];
 export type BoardItem = components['schemas']['BoardItem'];
 export type Card = components['schemas']['Card'];
@@ -213,29 +214,20 @@ export type CharacterId = components['schemas']['CharacterId'];
 export type Content = components['schemas']['Content'];
 export type Effect = components['schemas']['Effect'];
 export type EffectId = components['schemas']['EffectId'];
-export type GridForBoardItem = components['schemas']['Grid_for_BoardItem'];
+export type Grid = components['schemas']['Grid'];
 export type Health = components['schemas']['Health'];
 export type Object = components['schemas']['Object'];
 export type ObjectId = components['schemas']['ObjectId'];
 export type StoryCardEntry = components['schemas']['StoryCardEntry'];
 export type Team = components['schemas']['Team'];
 export type TeamId = components['schemas']['TeamId'];
-export type TemplateEntryForBattleTextEntry = components['schemas']['TemplateEntry_for_BattleTextEntry'];
+export type TemplateEntry = components['schemas']['TemplateEntry'];
 export type U64Range = components['schemas']['U64Range'];
 export type $defs = Record<string, never>;
 export enum BattleTextEntry {
     Id = "Id",
     Attack = "Attack",
     Damage = "Damage"
-}
-export enum BoardItemType {
-    Character = "Character"
-}
-export enum BoardItemType {
-    Card = "Card"
-}
-export enum BoardItemType {
-    Inert = "Inert"
 }
 export enum CharacterRace {
     Human = "Human",

@@ -4,45 +4,44 @@ import {
   CardId,
   CharacterId,
   StoryCardEntry,
-  TemplateEntryForBattleTextEntry,
+  TemplateEntry,
   Target,
-  BoardItemType,
 } from "./battle-schema.generated";
 
 export { Target as ActionTarget };
 
-export type TypedText = TemplateEntryForBattleTextEntry;
+export type TypedText = TemplateEntry;
 export type BattleHistoryEntry = TypedText[];
 export type StoryCard = StoryCardEntry[];
 
 export type BoardItemCharacter = BoardItem & {
   id: CharacterId;
-  type: BoardItemType.Character;
+  type: "Character";
 };
 
 export type BoardItemCard = BoardItem & {
   id: CardId;
-  type: BoardItemType.Card;
+  type: "Card";
 };
 
 export type BoardItemInert = BoardItem & {
-  type: BoardItemType.Inert;
+  type: "Inert";
 };
 
 export function isBoardItemCharacter(
   item: BoardItem | null | undefined,
 ): item is BoardItemCharacter {
-  return item instanceof Object && item.type === BoardItemType.Character;
+  return item instanceof Object && item.type === "Character";
 }
 
 export function isBoardItemCard(
   item: BoardItem | null | undefined,
 ): item is BoardItemCard {
-  return item instanceof Object && item.type === BoardItemType.Card;
+  return item instanceof Object && item.type === "Card";
 }
 
 export function isBoardItemInert(
   item: BoardItem | null | undefined,
 ): item is BoardItemInert {
-  return item instanceof Object && item.type === BoardItemType.Inert;
+  return item instanceof Object && item.type === "Inert";
 }

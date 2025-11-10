@@ -28,11 +28,11 @@ macro_rules! DeclareWrappedType {
         }
 
         impl JsonSchema for $struct_name {
-            fn schema_name() -> String {
-                stringify!($struct_name).to_owned()
+            fn schema_name() -> std::borrow::Cow<'static, str> {
+                stringify!($struct_name).into()
             }
 
-            fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::schema::Schema {
+            fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
                 generator.subschema_for::<$field_type>()
             }
         }
