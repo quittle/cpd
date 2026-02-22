@@ -4,11 +4,11 @@
     "type": "module",
     "scripts": {
         "build": "NODE_ENV=development vite build --config=vite.config.js ./src/web_actor/static",
-        "lint": "eslint ./src/web_actor/static",
-        "lint-fix": "eslint --fix ./src/web_actor/static",
-        "format": "prettier --check ./src/web_actor/static",
-        "format-fix": "prettier --write ./src/web_actor/static",
-        "type-check": "tsc --noEmit",
+        "lint": "npx eslint ./src/web_actor/static",
+        "lint-fix": "npx eslint --fix ./src/web_actor/static",
+        "format": "npx prettier --check ./src/web_actor/static",
+        "format-fix": "npx prettier --write ./src/web_actor/static",
+        "type-check": "npx tsc --noEmit",
         "check-all": "npm run lint && npm run format && npm run type-check",
         "build-server": "NODE_ENV=development vite build --config=vite.config.js --watch ./src/web_actor/static"
     },

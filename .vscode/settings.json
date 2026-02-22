@@ -1,5 +1,5 @@
 {
-    "rust-analyzer.linkedProjects": ["./Cargo.toml"],
-    "vite.autoStart": false,
-    "typescript.tsdk": "node_modules/typescript/lib"
+  "rust-analyzer.linkedProjects": ["./Cargo.toml"],
+  "vite.autoStart": false,
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
