@@ -1,4 +1,8 @@
 :root {
   --c-health: #f63a3a;
   --c-grey: #d9d9d9;
+  --c-green: #99c099;
+  --c-dark-green: hsl(from var(--c-green) h s calc(l - 5));
+  --c-primary-background: var(--c-green);
+  --c-primary-active: var(--c-dark-green);
 }

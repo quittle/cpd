@@ -72,6 +72,16 @@
                     "cards": [1],
                     "location": [0, 0],
                     "movement": 1
+                },
+                {
+                    "name": "Bad Guy",
+                    "race": "Human",
+                    "image": "long-neck.png",
+                    "base_health": 5,
+                    "hand_size": 1,
+                    "cards": [1],
+                    "location": [1, 1],
+                    "movement": 1
                 }
             ]
         },

@@ -1,6 +1,7 @@
 .character {
   background: #ededed;
   min-width: 200px;
+  height: 100%;
 
   --character-horizontal-padding: 0.75em;
   --health-bar-horizontal-padding: var(--character-horizontal-padding);
@@ -27,9 +28,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: var(--padding-m);
+
+    & h3 {
+      flex-grow: 1;
+    }
   }
 
-  & .movement {
+  & .movement,
+  & .actions {
     background-position: right;
     background-size: contain;
     background-repeat: no-repeat;
@@ -50,8 +57,24 @@
 
 .character-end-turn {
   font-size: 2em;
-  padding: 1em;
-  margin-inline-start: 1em;
+  width: 100%;
+  padding: var(--padding-s) var(--padding-l);
   vertical-align: top;
   cursor: pointer;
+  background: var(--c-primary-background);
+  border: 0;
+  transition: background-color 250ms linear;
+
+  & .character-end-turn-icon {
+    display: inline-block;
+    transition: transform 250ms ease-out;
+  }
+
+  &:hover {
+    background: var(--c-primary-active);
+    & .character-end-turn-icon {
+      transform: translateX(var(--padding-s));
+      transition-timing-function: cubic-bezier(0.8, -0.4, 0.5, 1);
+    }
+  }
 }

@@ -9,7 +9,7 @@ import {
 import { assetPath, countEntries, cssUrl } from "./utils";
 import { pass, takeAction } from "./state";
 import { isCardEligible } from "./Card";
-import { footsteps } from "./images";
+import { footsteps, bolt } from "./images";
 import Container from "./Container";
 import HealthBar from "./HealthBar";
 import Effect from "./Effect";
@@ -58,20 +58,7 @@ export default function Character(props: {
       }}
     >
       {character.image ? (
-        <img
-          src={assetPath(character.image)}
-          style={{ width: isPlayer ? "100px" : "100%" }}
-        />
-      ) : null}
-      {isPlayer ? (
-        <button
-          className="character-end-turn"
-          onClick={async () => {
-            await pass();
-          }}
-        >
-          End Turn
-        </button>
+        <img src={assetPath(character.image)} style={{ width: "100%" }} />
       ) : null}
 
       {character.contains.length > 0 ? (
@@ -84,9 +71,6 @@ export default function Character(props: {
           Open
         </button>
       ) : null}
-      {isPlayer
-        ? `Remaining actions: ${"🔵".repeat(character.remaining_actions)}`
-        : null}
 
       <HealthBar
         value={character.health}
@@ -108,6 +92,15 @@ export default function Character(props: {
           >
             {character.movement}
           </span>
+          <span
+            title="Actions"
+            className="actions"
+            style={{
+              backgroundImage: cssUrl(bolt),
+            }}
+          >
+            {character.remaining_actions}
+          </span>
         </div>
 
         <div className="effects">
@@ -116,6 +109,16 @@ export default function Character(props: {
           ))}
         </div>
       </div>
+      {isPlayer ? (
+        <button
+          className="character-end-turn"
+          onClick={async () => {
+            await pass();
+          }}
+        >
+          End Turn <span className="character-end-turn-icon">👍</span>
+        </button>
+      ) : null}
       {contentsOpened ? (
         <Container
           characterId={characterId}
