@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useId } from "react";
+import React, { useLayoutEffect, useId, useRef } from "react";
 
 export interface TooltipProps {
   title: string;
@@ -9,10 +9,12 @@ export interface TooltipProps {
 export default function Tooltip(props: TooltipProps) {
   const { title, body, anchor } = props;
 
+  const anchorRef = useRef(anchor);
+
   const anchorName = `--${useId()}`;
 
   useLayoutEffect(() => {
-    anchor.style["anchorName"] = anchorName;
+    anchorRef.current.style["anchorName"] = anchorName;
   }, [anchor, anchorName]);
 
   return (

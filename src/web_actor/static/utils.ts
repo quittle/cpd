@@ -1,6 +1,5 @@
-import React from "react";
-import {
-  ActionTarget,
+import type React from "react";
+import type {
   Battle,
   BattleState,
   Card,
@@ -8,8 +7,8 @@ import {
   Character,
   CharacterId,
   Content,
-  isBoardItemCharacter,
 } from "./battle";
+import { ActionTarget, isBoardItemCharacter } from "./battle";
 
 export function getActionTarget(action: CardAction): ActionTarget {
   return (
@@ -84,7 +83,7 @@ export function isAdjacent(a?: Coordinate, b?: Coordinate): boolean {
 }
 
 export function countEntries<T>(entries: readonly T[]): Map<T, number> {
-  const ret: Map<T, number> = new Map();
+  const ret = new Map<T, number>();
   for (const entry of entries) {
     ret.set(entry, (ret.get(entry) ?? 0) + 1);
   }

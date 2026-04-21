@@ -1,13 +1,12 @@
 import React, { useState } from "react";
+import type { BattleState, CardInstance, Character } from "./battle";
 import {
-  BattleState,
-  CardInstance,
-  Character,
   isBoardItemCard,
   isBoardItemCharacter,
   isBoardItemInert,
 } from "./battle";
-import { assetUrl, Coordinate, getPlayerCoordinate, isAdjacent } from "./utils";
+import type { Coordinate } from "./utils";
+import { assetUrl, getPlayerCoordinate, isAdjacent } from "./utils";
 import { move, takeAction, takeContent } from "./state";
 import { isCardEligible } from "./Card";
 
@@ -15,7 +14,7 @@ export function GameBoard(props: {
   battleState: BattleState;
   draggedCard: CardInstance | undefined;
 }) {
-  const battle = props.battleState.battle;
+  const { battle } = props.battleState;
   const [selectedSquare, setSelectedSquare] = useState<Coordinate>();
 
   const playerCoordinate = getPlayerCoordinate(props.battleState);
@@ -55,9 +54,7 @@ export function GameBoard(props: {
               }
               const curLocation: Coordinate = { x, y };
               const isSelectedSquare =
-                selectedSquare &&
-                selectedSquare.x === x &&
-                selectedSquare.y === y;
+                selectedSquare?.x === x && selectedSquare.y === y;
 
               // Only ineligible if there is actively a card being dragged and that card isn't eligible.
               const isIneligible =

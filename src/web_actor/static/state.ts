@@ -1,5 +1,5 @@
-import { CardId, CharacterId, ObjectId, CardInstance } from "./battle";
-import { Coordinate } from "./utils";
+import type { CardId, CharacterId, ObjectId, CardInstance } from "./battle";
+import type { Coordinate } from "./utils";
 
 export async function takeAction(card: CardInstance, targetId: CharacterId) {
   await fetch("/act", {

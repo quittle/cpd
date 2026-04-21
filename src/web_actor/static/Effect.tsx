@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Badge from "./Badge";
-import { Effect } from "./battle";
+import type { Effect } from "./battle";
 import { assetUrl } from "./utils";
 import HoverTooltip from "./HoverTooltip";
 

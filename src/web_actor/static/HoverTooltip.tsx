@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Tooltip, { TooltipProps } from "./Tooltip";
+import type { TooltipProps } from "./Tooltip";
+import Tooltip from "./Tooltip";
 
 export default function HoverTooltip(props: TooltipProps) {
   const { anchor } = props;
@@ -7,10 +8,18 @@ export default function HoverTooltip(props: TooltipProps) {
   const [shown, setShown] = useState(false);
 
   useEffect(() => {
-    anchor.addEventListener("mouseover", () => setShown(true));
-    anchor.addEventListener("focus", () => setShown(true));
-    anchor.addEventListener("mouseout", () => setShown(false));
-    anchor.addEventListener("blur", () => setShown(false));
+    anchor.addEventListener("mouseover", () => {
+      setShown(true);
+    });
+    anchor.addEventListener("focus", () => {
+      setShown(true);
+    });
+    anchor.addEventListener("mouseout", () => {
+      setShown(false);
+    });
+    anchor.addEventListener("blur", () => {
+      setShown(false);
+    });
   }, [anchor]);
 
   return shown ? <Tooltip {...props}></Tooltip> : null;

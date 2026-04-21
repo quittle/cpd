@@ -1,12 +1,12 @@
 export * from "./battle-schema.generated";
-import {
+import type {
   BoardItem,
   CardId,
   CharacterId,
   StoryCardEntry,
   TemplateEntry,
-  Target,
 } from "./battle-schema.generated";
+import { Target } from "./battle-schema.generated";
 
 export { Target as ActionTarget };
 

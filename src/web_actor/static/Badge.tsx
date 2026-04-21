@@ -1,6 +1,6 @@
 import React from "react";
-import { ReactNode } from "react";
-export default function Badge(props: {
+import type { ReactNode } from "react";
+export default async function Badge(props: {
   count: number;
   showCountBelowTwo: boolean;
   children: ReactNode;

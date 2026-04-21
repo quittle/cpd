@@ -1,5 +1,5 @@
 import React from "react";
-import { BattleState, CharacterId, Content } from "./battle";
+import type { BattleState, CharacterId, Content } from "./battle";
 import { assetPath, describeContent, getCharacterCoordinate } from "./utils";
 import { PopUp } from "./PopUp";
 import { takeContent } from "./state";

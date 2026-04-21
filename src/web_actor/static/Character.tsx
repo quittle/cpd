@@ -1,11 +1,11 @@
 import React from "react";
-import {
+import type {
   BattleState,
-  Character,
   CharacterId,
   Effect as BattleEffect,
   CardInstance,
 } from "./battle";
+import { Character } from "./battle";
 import { assetPath, countEntries, cssUrl } from "./utils";
 import { pass, takeAction } from "./state";
 import { isCardEligible } from "./Card";
@@ -124,7 +124,9 @@ export default function Character(props: {
           characterId={characterId}
           battleState={battleState}
           contents={character.contains}
-          onClose={() => setContentsOpened(false)}
+          onClose={() => {
+            setContentsOpened(false);
+          }}
         />
       ) : null}
     </div>

@@ -1,5 +1,6 @@
 import React from "react";
-import { ActionTarget, Battle, Card, CardInstance } from "./battle";
+import type { Battle, Card, CardInstance } from "./battle";
+import { ActionTarget } from "./battle";
 import { getCardTarget } from "./utils";
 
 export function isCardEligible(

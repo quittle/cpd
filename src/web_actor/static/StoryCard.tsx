@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { StoryCard, StoryCardEntry } from "./battle";
+import type { StoryCard } from "./battle";
+import { StoryCardEntry } from "./battle";
 
 function StoryCardEntry(props: { entry: StoryCardEntry }): React.ReactNode {
   const { entry } = props;

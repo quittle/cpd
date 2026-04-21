@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { ActionTarget, BattleState, CardInstance } from "./battle";
+import type { BattleState, CardInstance } from "./battle";
+import { ActionTarget } from "./battle";
 import * as messages from "./messages.js";
 import Card from "./Card.js";
 import Character from "./Character.js";
@@ -21,7 +22,15 @@ export default function App() {
     fetch("/info");
 
     const onBattleState = (e) => {
-      setBattleState(JSON.parse(e.data));
+      const newBattleState: BattleState = JSON.parse(e.data);
+      setBattleState(newBattleState);
+
+      const { round } = newBattleState.battle;
+      if (round === undefined) {
+        setShowIntroState(false);
+      } else {
+        setShowIntroState(round <= 1);
+      }
     };
 
     messages.addEventListener("battle_state", onBattleState);
@@ -29,15 +38,6 @@ export default function App() {
       messages.removeEventListener("battle_state", onBattleState);
     };
   }, [setBattleState]);
-
-  useEffect(() => {
-    const round = battleState?.battle.round;
-    if (round === undefined) {
-      setShowIntroState(false);
-    } else {
-      setShowIntroState(round <= 1);
-    }
-  }, [battleState?.battle.round]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -57,7 +57,9 @@ export default function App() {
     window.addEventListener("keydown", handleKeyDown);
 
     // Cleanup function
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [battleState]);
 
   if (!battleState) {
@@ -72,7 +74,9 @@ export default function App() {
         <StoryCard
           storyCard={battleState.battle.introduction}
           show={showIntroState}
-          onClose={() => setShowIntroState(false)}
+          onClose={() => {
+            setShowIntroState(false);
+          }}
         />
       ) : (
         <></>
@@ -110,12 +114,12 @@ export default function App() {
               let defaultAction: undefined | (() => Promise<void>);
               if (target === ActionTarget.Me) {
                 defaultAction = async () =>
-                  await takeAction(cardInstance, characterId);
+                  takeAction(cardInstance, characterId);
               } else if (target === ActionTarget.Others) {
                 const enemies = getLivingEnemies(battle, characterId);
                 if (enemies.length == 1) {
                   defaultAction = async () =>
-                    await takeAction(cardInstance, enemies[0].id);
+                    takeAction(cardInstance, enemies[0].id);
                 }
               }
               return (
@@ -123,8 +127,12 @@ export default function App() {
                   <Card
                     card={card}
                     cardInstance={cardInstance}
-                    onDragStart={() => setDragState(cardInstance)}
-                    onDragEnd={() => setDragState(undefined)}
+                    onDragStart={() => {
+                      setDragState(cardInstance);
+                    }}
+                    onDragEnd={() => {
+                      setDragState(undefined);
+                    }}
                     onClick={async () => {
                       // Take default actions when clicking buttons
                       if (defaultAction) {

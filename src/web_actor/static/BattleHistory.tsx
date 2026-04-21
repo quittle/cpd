@@ -1,5 +1,5 @@
 import React from "react";
-import { BattleHistoryEntry, TypedText } from "./battle";
+import type { BattleHistoryEntry, TypedText } from "./battle";
 
 function convert(typedText: TypedText): React.ReactNode {
   if ("Text" in typedText) {
