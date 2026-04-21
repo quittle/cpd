@@ -5,22 +5,22 @@ use crate::*;
 #[derive(Debug)]
 pub enum Action {
     Pass,
-    Act(CardId, CharacterId),
+    Act(CardInstance, CharacterId),
     Move(CharacterId, GridLocation),
     Take(CharacterId, GridLocation, TakeActionItem),
 }
 
 #[derive(Debug, PartialEq)]
 pub enum TakeActionItem {
-    Card(usize),
-    Object(usize),
+    Card(usize, usize),
+    Object(usize, usize),
 }
 
 impl TakeActionItem {
-    pub fn id(&self) -> &usize {
+    pub fn id(&self) -> (&usize, &usize) {
         match self {
-            Self::Card(id) => id,
-            Self::Object(id) => id,
+            Self::Card(id, instance_id) => (id, instance_id),
+            Self::Object(id, instance_id) => (id, instance_id),
         }
     }
 }

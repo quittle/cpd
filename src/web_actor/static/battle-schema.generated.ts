@@ -47,7 +47,7 @@ export interface components {
             /** @constant */
             type: "Character";
         } | {
-            id: components["schemas"]["CardId"];
+            id: components["schemas"]["CardInstance"];
             /** @constant */
             type: "Card";
         } | {
@@ -105,19 +105,29 @@ export interface components {
                 effect: components["schemas"]["EffectId"];
                 target: components["schemas"]["Target"];
             };
+        } | {
+            DestroySelf: {
+                chance: components["schemas"]["Chance"];
+            };
         };
         /** Format: uint */
         CardId: number;
+        CardInstance: {
+            card_id: components["schemas"]["CardId"];
+            card_instance_id: components["schemas"]["CardInstanceId"];
+        };
+        /** Format: uint */
+        CardInstanceId: number;
         /** Format: uint32 */
         Chance: number;
         Character: {
             contains: components["schemas"]["Content"][];
-            deck: components["schemas"]["CardId"][];
+            deck: components["schemas"]["CardInstance"][];
             /** Format: uint64 */
             default_movement: number;
-            discard: components["schemas"]["CardId"][];
+            discard: components["schemas"]["CardInstance"][];
             effects: components["schemas"]["EffectId"][];
-            hand: components["schemas"]["CardId"][];
+            hand: components["schemas"]["CardInstance"][];
             /** Format: uint */
             hand_size: number;
             health: components["schemas"]["Health"];
@@ -136,9 +146,9 @@ export interface components {
         /** @enum {string} */
         CharacterRace: CharacterRace;
         Content: {
-            Card: components["schemas"]["CardId"];
+            Card: components["schemas"]["CardInstance"];
         } | {
-            Object: components["schemas"]["ObjectId"];
+            Object: components["schemas"]["ObjectInstance"];
         };
         Effect: {
             actions: components["schemas"]["CardAction"][];
@@ -167,6 +177,12 @@ export interface components {
         };
         /** Format: uint */
         ObjectId: number;
+        ObjectInstance: {
+            object_id: components["schemas"]["ObjectId"];
+            object_instance_id: components["schemas"]["ObjectInstanceId"];
+        };
+        /** Format: uint */
+        ObjectInstanceId: number;
         StoryCardEntry: {
             h1: string;
         } | {
@@ -208,6 +224,8 @@ export type BoardItem = components['schemas']['BoardItem'];
 export type Card = components['schemas']['Card'];
 export type CardAction = components['schemas']['CardAction'];
 export type CardId = components['schemas']['CardId'];
+export type CardInstance = components['schemas']['CardInstance'];
+export type CardInstanceId = components['schemas']['CardInstanceId'];
 export type Chance = components['schemas']['Chance'];
 export type Character = components['schemas']['Character'];
 export type CharacterId = components['schemas']['CharacterId'];
@@ -218,6 +236,8 @@ export type Grid = components['schemas']['Grid'];
 export type Health = components['schemas']['Health'];
 export type Object = components['schemas']['Object'];
 export type ObjectId = components['schemas']['ObjectId'];
+export type ObjectInstance = components['schemas']['ObjectInstance'];
+export type ObjectInstanceId = components['schemas']['ObjectInstanceId'];
 export type StoryCardEntry = components['schemas']['StoryCardEntry'];
 export type Team = components['schemas']['Team'];
 export type TeamId = components['schemas']['TeamId'];

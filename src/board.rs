@@ -1,13 +1,13 @@
 use schemars::JsonSchema;
 use serde::Serialize;
 
-use crate::{CardId, CharacterId, Grid, GridDimension, GridLocation};
+use crate::{CardInstance, CharacterId, Grid, GridDimension, GridLocation};
 
 #[derive(Serialize, PartialEq, Debug, JsonSchema)]
 #[serde(deny_unknown_fields, tag = "type", content = "id")]
 pub enum BoardItem {
     Character(CharacterId),
-    Card(CardId),
+    Card(CardInstance),
     Inert,
 }
 

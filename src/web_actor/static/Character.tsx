@@ -1,10 +1,10 @@
 import React from "react";
 import {
   BattleState,
-  CardId,
   Character,
   CharacterId,
   Effect as BattleEffect,
+  CardInstance,
 } from "./battle";
 import { assetPath, countEntries, cssUrl } from "./utils";
 import { pass, takeAction } from "./state";
@@ -17,7 +17,7 @@ import Effect from "./Effect";
 export default function Character(props: {
   isPlayer: boolean;
   characterId: CharacterId;
-  draggedCard: CardId | undefined;
+  draggedCard: CardInstance | undefined;
   battleState: BattleState;
 }) {
   const { isPlayer, characterId, draggedCard, battleState } = props;

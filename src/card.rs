@@ -3,6 +3,23 @@ use schemars::JsonSchema;
 use serde::Serialize;
 
 DeclareWrappedType!(CardId, id, battle_file::CardId);
+DeclareWrappedType!(CardInstanceId, id, usize);
+
+#[derive(PartialEq, Copy, Clone, Eq, Hash, Debug, Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CardInstance {
+    pub card_id: CardId,
+    pub card_instance_id: CardInstanceId,
+}
+
+impl CardInstance {
+    pub fn new(card_id: CardId, card_instance_id: CardInstanceId) -> Self {
+        Self {
+            card_id,
+            card_instance_id,
+        }
+    }
+}
 
 pub type LifeNumber = battle_file::LifeNumber;
 
@@ -76,6 +93,9 @@ pub enum CardAction {
         amount: u64,
         chance: Chance,
     },
+    DestroySelf {
+        chance: Chance,
+    },
 }
 
 impl CardAction {
@@ -88,6 +108,7 @@ impl CardAction {
             Self::Effect { target, .. } => target,
             Self::RemoveEffect { target, .. } => target,
             Self::ReduceEffect { target, .. } => target,
+            Self::DestroySelf { .. } => &Target::Me,
         }
     }
 }

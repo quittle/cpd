@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -49,11 +51,12 @@ impl Battle {
                     CardAction::Effect { target, .. } => target,
                     CardAction::RemoveEffect { target, .. } => target,
                     CardAction::ReduceEffect { target, .. } => target,
+                    CardAction::DestroySelf { .. } => &Target::Me,
                 };
                 if target != &Target::Me && card.range.is_none() {
                     return Err(format!(
-                        "Card with id {} has an action that can target others but without a range specified",
-                        card.id
+                        "Card {} has an action that can target others but without a range specified",
+                        card
                     ));
                 }
             }
@@ -276,6 +279,9 @@ pub enum CardAction {
         amount: Option<u64>,
         chance: Option<f64>,
     },
+    DestroySelf {
+        chance: Option<f64>,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -287,6 +293,12 @@ pub struct Card {
     pub flavor: Option<String>,
     pub actions: Vec<CardAction>,
     pub range: Option<u64>,
+}
+
+impl Display for Card {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Card \"{}\" ({})", self.name, self.id)
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

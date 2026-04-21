@@ -1,13 +1,13 @@
 import React from "react";
-import { ActionTarget, Battle, Card, CardId } from "./battle";
+import { ActionTarget, Battle, Card, CardInstance } from "./battle";
 import { getCardTarget } from "./utils";
 
 export function isCardEligible(
   isPlayer: boolean,
-  cardId: CardId,
+  cardInstance: CardInstance,
   battle: Battle,
 ): boolean {
-  const card = battle.cards[cardId];
+  const card = battle.cards[cardInstance.card_id];
   const target = getCardTarget(card);
   switch (target) {
     case ActionTarget.Me:
@@ -21,6 +21,7 @@ export function isCardEligible(
 
 export default function Card(props: {
   card: Card;
+  cardInstance: CardInstance;
   enabled: boolean;
   onDragStart: () => void;
   onDragEnd: () => void;
@@ -32,7 +33,10 @@ export default function Card(props: {
       className="card"
       draggable={props.enabled}
       onDragStart={(e) => {
-        e.dataTransfer.setData("text/plain", String(props.card.id));
+        e.dataTransfer.setData(
+          "text/plain",
+          String(props.cardInstance.card_instance_id),
+        );
         props.onDragStart();
       }}
       onClick={props.onClick}

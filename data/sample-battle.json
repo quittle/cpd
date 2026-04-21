@@ -165,6 +165,23 @@
                     "amount": 1
                 }
             ]
+        },
+        {
+            "id": 6,
+            "name": "Dynamite",
+            "description": "Deal 10 damage, then destroy this card",
+            "flavor": "Boom!",
+            "range": 1,
+            "actions": [
+                {
+                    "type": "damage",
+                    "target": "any",
+                    "amount": 10
+                },
+                {
+                    "type": "destroy_self"
+                }
+            ]
         }
     ],
     "teams": [
@@ -184,7 +201,7 @@
                     "race": "Human",
                     "image": "pirate.png",
                     "base_health": 5,
-                    "cards": [0, 1],
+                    "cards": [0, 1, 6],
                     "location": [1, 1]
                 }
             ]
@@ -198,8 +215,8 @@
                     "race": "Human",
                     "image": "captain.png",
                     "base_health": 15,
-                    "hand_size": 2,
-                    "cards": [0, 1, 2, 3, 4, 5],
+                    "hand_size": 5,
+                    "cards": [0, 1, 2, 3, 4, 5, 6],
                     "location": [4, 3]
                 }
             ]

@@ -4,7 +4,10 @@ use crate::*;
 
 pub enum BattleMenuOutput {
     Pass,
-    Card { target: CharacterId, card: CardId },
+    Card {
+        target: CharacterId,
+        card: CardInstance,
+    },
 }
 
 type BattleMenuAction = MenuAction<Battle, BattleMenuOutput>;
@@ -13,7 +16,7 @@ pub type BattleMenu = Menu<Battle, BattleMenuOutput>;
 
 pub struct CardSelectionItem {
     target: CharacterId,
-    card: CardId,
+    card: CardInstance,
 }
 
 impl MenuItem<Battle, BattleMenuOutput> for CardSelectionItem {
@@ -31,7 +34,7 @@ impl MenuItem<Battle, BattleMenuOutput> for CardSelectionItem {
 
 pub struct ActionsMenu {
     pub me: CharacterId,
-    pub cards: Vec<CardId>,
+    pub cards: Vec<CardInstance>,
     pub targets: Vec<CharacterId>,
 }
 
@@ -45,7 +48,7 @@ impl MenuItem<Battle, BattleMenuOutput> for ActionsMenu {
             self.cards
                 .iter()
                 .map(|card| -> Rc<dyn MenuItem<Battle, BattleMenuOutput>> {
-                    let card_target = battle.cards[card].target();
+                    let card_target = battle.cards[&card.card_id].target();
                     Rc::new(CardMenu {
                         me: self.me,
                         card: *card,
@@ -70,13 +73,13 @@ impl MenuItem<Battle, BattleMenuOutput> for ActionsMenu {
 
 pub struct CardMenu {
     pub me: CharacterId,
-    pub card: CardId,
+    pub card: CardInstance,
     pub targets: Vec<CharacterId>,
 }
 
 impl MenuItem<Battle, BattleMenuOutput> for CardMenu {
     fn label(&self, battle: &Battle) -> String {
-        let card = &battle.cards[&self.card];
+        let card = &battle.cards[&self.card.card_id];
         format!(
             "{}: {}{}{}{}",
             card.name,
@@ -93,7 +96,7 @@ impl MenuItem<Battle, BattleMenuOutput> for CardMenu {
     }
 
     fn action(&self, battle: &Battle) -> BattleMenuAction {
-        match battle.cards[&self.card].target() {
+        match battle.cards[&self.card.card_id].target() {
             Target::Me => MenuAction::Done(BattleMenuOutput::Card {
                 target: self.me,
                 card: self.card,

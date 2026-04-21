@@ -1,14 +1,15 @@
-import { CardId, CharacterId, ObjectId } from "./battle";
+import { CardId, CharacterId, ObjectId, CardInstance } from "./battle";
 import { Coordinate } from "./utils";
 
-export async function takeAction(cardId: CardId, targetId: CharacterId) {
+export async function takeAction(card: CardInstance, targetId: CharacterId) {
   await fetch("/act", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      card_id: cardId,
+      card_id: card.card_id,
+      card_instance_id: card.card_instance_id,
       target_id: targetId,
     }),
   });

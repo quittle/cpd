@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   BattleState,
-  CardId,
+  CardInstance,
   Character,
   isBoardItemCard,
   isBoardItemCharacter,
@@ -13,7 +13,7 @@ import { isCardEligible } from "./Card";
 
 export function GameBoard(props: {
   battleState: BattleState;
-  draggedCard: CardId | undefined;
+  draggedCard: CardInstance | undefined;
 }) {
   const battle = props.battleState.battle;
   const [selectedSquare, setSelectedSquare] = useState<Coordinate>();

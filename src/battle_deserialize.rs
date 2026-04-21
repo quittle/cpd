@@ -1,8 +1,9 @@
 use std::path::PathBuf;
 
 use crate::{
-    Actor, Battle, Board, BoardItem, CardId, Character, CharacterId, CharacterRace, DumbActor,
-    EffectId, Health, ObjectId, RandomProvider, Team, TeamId, TerminalActor, U64Range, battle_file,
+    Actor, Battle, Board, BoardItem, CardId, CardInstance, CardInstanceId, Character, CharacterId,
+    CharacterRace, DumbActor, EffectId, Health, NumericExt, ObjectId, ObjectInstance,
+    ObjectInstanceId, RandomProvider, Team, TeamId, TerminalActor, U64Range, battle_file,
     web_actor::WebActor,
 };
 use futures::future::join_all;
@@ -43,6 +44,9 @@ impl Battle {
 
         let mut board = Board::new(battle.board.width, battle.board.height);
 
+        let mut current_card_instance_id = 0usize;
+        let mut current_object_instance_id = 0usize;
+
         for cell in &battle.board.cells.unwrap_or_default() {
             match cell {
                 battle_file::Cell::Card { card, location } => {
@@ -50,7 +54,16 @@ impl Battle {
                         if !board.grid.is_valid(x, y) {
                             return Err(format!("Invalid card position: {x}, {y}"));
                         }
-                        board.grid.set(x, y, BoardItem::Card(CardId::new(*card)));
+                        board.grid.set(
+                            x,
+                            y,
+                            BoardItem::Card(CardInstance {
+                                card_id: CardId::new(*card),
+                                card_instance_id: CardInstanceId::new(
+                                    current_card_instance_id.inc(),
+                                ),
+                            }),
+                        );
                     }
                 }
                 battle_file::Cell::Inert { location, .. } => {
@@ -70,39 +83,32 @@ impl Battle {
             .map(|team| team.members.len())
             .max()
             .unwrap_or(0);
-        {
-            for (team_index, team) in battle.teams.iter().enumerate() {
-                for (index, member) in team.members.iter().enumerate() {
-                    let (x, y) = member.location;
-                    if !board.grid.is_valid(x, y) {
-                        return Err(format!("Invalid team member position: {x}, {y}"));
-                    }
-                    // Makes strong assumptions about the way character ids are picked, incrementing in the same order of team and member
-                    if let Some(_prev_id) = board.grid.set(
-                        x,
-                        y,
-                        BoardItem::Character(CharacterId::new(team_index * max_team_size + index)),
-                    ) {
-                        return Err(format!("Multiple entries found at {x}, {y}"));
-                    }
 
-                    for item in &member.contains {
-                        match item {
-                            battle_file::Content::Card(id) => {
-                                if battle.cards.len() <= *id {
-                                    return Err(format!(
-                                        "Invalid card id {id} for {}",
-                                        member.name
-                                    ));
-                                }
+        for (team_index, team) in battle.teams.iter().enumerate() {
+            for (index, member) in team.members.iter().enumerate() {
+                let (x, y) = member.location;
+                if !board.grid.is_valid(x, y) {
+                    return Err(format!("Invalid team member position: {x}, {y}"));
+                }
+                // Makes strong assumptions about the way character ids are picked, incrementing in the same order of team and member
+                if let Some(_prev_id) = board.grid.set(
+                    x,
+                    y,
+                    BoardItem::Character(CharacterId::new(team_index * max_team_size + index)),
+                ) {
+                    return Err(format!("Multiple entries found at {x}, {y}"));
+                }
+
+                for item in &member.contains {
+                    match item {
+                        battle_file::Content::Card(id) => {
+                            if battle.cards.len() <= *id {
+                                return Err(format!("Invalid card id {id} for {}", member.name));
                             }
-                            battle_file::Content::Object(id) => {
-                                if battle.objects.len() <= *id {
-                                    return Err(format!(
-                                        "Invalid object id {id} for {}",
-                                        member.name
-                                    ));
-                                }
+                        }
+                        battle_file::Content::Object(id) => {
+                            if battle.objects.len() <= *id {
+                                return Err(format!("Invalid object id {id} for {}", member.name));
                             }
                         }
                     }
@@ -148,7 +154,12 @@ impl Battle {
                             deck: member
                                 .cards
                                 .iter()
-                                .map(|card_id| CardId::new(*card_id))
+                                .map(|card_id| CardInstance {
+                                    card_id: CardId::new(*card_id),
+                                    card_instance_id: CardInstanceId::new(
+                                        current_card_instance_id.inc(),
+                                    ),
+                                })
                                 .collect(),
                             discard: vec![],
                             health: Health::new(member.base_health),
@@ -165,10 +176,16 @@ impl Battle {
                                 .iter()
                                 .map(|content| match content {
                                     battle_file::Content::Card(id) => {
-                                        crate::Content::Card(CardId::new(*id))
+                                        crate::Content::Card(CardInstance::new(
+                                            CardId::new(*id),
+                                            CardInstanceId::new(current_card_instance_id.inc()),
+                                        ))
                                     }
                                     battle_file::Content::Object(id) => {
-                                        crate::Content::Object(ObjectId::new(*id))
+                                        crate::Content::Object(ObjectInstance::new(
+                                            ObjectId::new(*id),
+                                            ObjectInstanceId::new(current_object_instance_id.inc()),
+                                        ))
                                     }
                                 })
                                 .collect(),
@@ -306,6 +323,9 @@ fn deserialize_card_action(card_action: &battle_file::CardAction) -> crate::Card
             target: deserialize_target(target),
             effect: EffectId::new(*effect),
             amount: amount.unwrap_or(1),
+            chance: deserialize_chance(chance),
+        },
+        battle_file::CardAction::DestroySelf { chance } => crate::CardAction::DestroySelf {
             chance: deserialize_chance(chance),
         },
     }

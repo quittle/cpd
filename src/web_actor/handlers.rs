@@ -1,6 +1,6 @@
 use crate::{
-    Action, ActionError, ActionFailure, ActionResult, CardId, CharacterId, GridLocation,
-    TakeActionItem,
+    Action, ActionError, ActionFailure, ActionResult, CardId, CardInstance, CardInstanceId,
+    CharacterId, GridLocation, TakeActionItem,
 };
 use actix_web::{HttpResponse, Responder, get, post, web};
 use actix_web_lab::sse;
@@ -34,7 +34,9 @@ struct Coordinate {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ActParams {
+    // TODO: Make these just a CardInstance
     card_id: usize,
+    card_instance_id: usize,
     target_id: usize,
 }
 
@@ -48,7 +50,10 @@ async fn handle_act(
         .await
         .action_tx
         .send(BattleServerEvent::Action(ActionResult::Ok(Action::Act(
-            CardId::new(info.card_id),
+            CardInstance {
+                card_id: CardId::new(info.card_id),
+                card_instance_id: CardInstanceId::new(info.card_instance_id),
+            },
             CharacterId::new(info.target_id),
         ))))
         .await
@@ -59,8 +64,8 @@ async fn handle_act(
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "snake_case")]
 enum TakeItem {
-    Card(usize),
-    Object(usize),
+    Card(usize, usize),
+    Object(usize, usize),
 }
 
 #[derive(Deserialize)]
@@ -87,8 +92,8 @@ async fn handle_take(
                 y: info.from.y,
             },
             match info.item {
-                TakeItem::Card(id) => TakeActionItem::Card(id),
-                TakeItem::Object(id) => TakeActionItem::Object(id),
+                TakeItem::Card(id, instance_id) => TakeActionItem::Card(id, instance_id),
+                TakeItem::Object(id, instance_id) => TakeActionItem::Object(id, instance_id),
             },
         ))))
         .await

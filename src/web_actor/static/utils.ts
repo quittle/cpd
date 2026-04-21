@@ -139,7 +139,7 @@ export function describeContent(
   if ("Object" in content) {
     return {
       key: `O${content.Object}`,
-      assetUrl: assetUrl(battle.objects[content.Object].image),
+      assetUrl: assetUrl(battle.objects[content.Object.object_id].image),
     };
   }
 }

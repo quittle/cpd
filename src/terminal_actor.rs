@@ -13,7 +13,7 @@ impl TerminalActor {
         blocks: &mut Vec<TerminalBlock>,
         mut menu: BattleMenu,
         battle: &Battle,
-    ) -> Result<Option<(CharacterId, CardId)>, ActionError> {
+    ) -> Result<Option<(CharacterId, CardInstance)>, ActionError> {
         blocks.push(TerminalBlock::default());
         blocks.push(TerminalBlock {
             prefix: TerminalSpan {

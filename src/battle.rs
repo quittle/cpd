@@ -1,8 +1,8 @@
 use crate::{
     Action, ActionError, Actor, Attack, BattleText, Board, BoardItem, Card, CardAction, CardId,
-    Character, CharacterId, Content, DeclareWrappedType, Effect, EffectId, GridLocation,
-    HashMapExt, Health, Object, ObjectId, RandomProvider, TakeActionItem, Target, Trigger,
-    U64Range, VecExt, battle_file, battle_markup,
+    CardInstance, CardInstanceId, Character, CharacterId, Content, DeclareWrappedType, Effect,
+    EffectId, GridLocation, HashMapExt, Health, Object, ObjectId, ObjectInstance, RandomProvider,
+    TakeActionItem, Target, Trigger, U64Range, VecExt, battle_file, battle_markup,
 };
 use schemars::JsonSchema;
 use serde::Serialize;
@@ -214,8 +214,8 @@ impl Battle {
 
                 false
             }
-            Action::Act(card_id, target_id) => {
-                let card = &self.cards[&card_id];
+            Action::Act(card_instance, target_id) => {
+                let card = &self.cards[&card_instance.card_id];
                 let actual_target = if *actor == target_id {
                     Target::Me
                 } else {
@@ -260,13 +260,18 @@ impl Battle {
                         &target_id
                     };
 
-                    self.try_run_card_action(*actor, *target_id, &action);
+                    self.try_run_card_action(*actor, *target_id, Some(card_instance), &action);
                 }
 
-                // Remove card from hand
+                // Remove card from hand if still there after all effects ran
                 let character = self.characters.require_mut(actor);
-                character.hand.remove_first_match(|id| id == &card_id);
-                character.discard.push(card_id);
+                if character
+                    .hand
+                    .remove_first_match(|instance| instance == &card_instance)
+                    .is_some()
+                {
+                    character.discard.push(card_instance);
+                }
 
                 true
             }
@@ -288,7 +293,7 @@ impl Battle {
             return None;
         }
 
-        let item_id: &usize = item.id();
+        let (item_id, item_instance_id) = item.id();
 
         let (x, y) = self.board.find(&BoardItem::Character(character_id))?;
         let character = &self.characters[actor];
@@ -297,25 +302,25 @@ impl Battle {
             return None;
         }
 
-        let add_card = |battle: &mut Battle, card_id: CardId| {
+        let add_card = |battle: &mut Battle, card_instance: CardInstance| {
             let character = battle.characters.get_mut(actor).unwrap();
             battle.history.push(battle_markup![
                 @id(&character.name),
                 " took ",
-                @id(&battle.cards[&card_id].name),
+                @id(&battle.cards[&card_instance.card_id].name),
                 ". "
             ]);
-            character.hand.push(card_id);
+            character.hand.push(card_instance);
         };
-        let add_object = |battle: &mut Battle, object_id: ObjectId| {
+        let add_object = |battle: &mut Battle, object_instance: ObjectInstance| {
             let character: &mut Character = battle.characters.get_mut(actor).unwrap();
             battle.history.push(battle_markup![
                 @id(&character.name),
                 " took ",
-                @id(&battle.objects[&object_id].name),
+                @id(&battle.objects[&object_instance.object_id].name),
                 ". "
             ]);
-            character.contains.push(Content::Object(object_id));
+            character.contains.push(Content::Object(object_instance));
         };
 
         let board_item = self.board.grid.get(location.x, location.y)?;
@@ -324,14 +329,19 @@ impl Battle {
                 // If the item is inert, they cannot take anything
                 None
             }
-            &BoardItem::Card(card_id) => {
-                if &card_id.id != item_id {
+            &BoardItem::Card(card_instance) => {
+                if card_instance
+                    != CardInstance::new(
+                        CardId::new(*item_id),
+                        CardInstanceId::new(*item_instance_id),
+                    )
+                {
                     // Not the right card
 
                     return None;
                 }
                 self.board.grid.clear(x, y);
-                add_card(self, card_id);
+                add_card(self, card_instance);
                 Some(true)
             }
             BoardItem::Character(loc_character_id) => {
@@ -340,19 +350,19 @@ impl Battle {
                     .require_mut(loc_character_id)
                     .contains
                     .remove_first_match(|content| match content {
-                        Content::Object(id) => &id.id == item_id,
-                        Content::Card(id) => &id.id == item_id,
+                        Content::Object(instance) => &instance.object_id.id == item_id,
+                        Content::Card(instance) => &instance.card_id.id == item_id,
                     })?;
 
                 match content {
-                    Content::Object(object_id) => {
-                        if self.objects.contains_key(&object_id) {
-                            add_object(self, object_id);
+                    Content::Object(object_instance) => {
+                        if self.objects.contains_key(&object_instance.object_id) {
+                            add_object(self, object_instance);
                         }
                     }
-                    Content::Card(card_id) => {
-                        if self.cards.contains_key(&card_id) {
-                            add_card(self, card_id);
+                    Content::Card(card_instance) => {
+                        if self.cards.contains_key(&card_instance.card_id) {
+                            add_card(self, card_instance);
                         }
                     }
                 }
@@ -432,6 +442,7 @@ impl Battle {
         &mut self,
         actor: CharacterId,
         target_id: CharacterId,
+        card_instance: Option<CardInstance>,
         action: &CardAction,
     ) -> bool {
         let mut history_entry = vec![];
@@ -555,6 +566,20 @@ impl Battle {
                     });
                 }
             }
+            CardAction::DestroySelf { chance } => {
+                if let Some(card_instance) = card_instance
+                    && chance.resolve(self.random_provider.as_ref())
+                    && target_character
+                        .hand
+                        .remove_first_match(|ci| ci == &card_instance)
+                        .is_some()
+                {
+                    history_entry.extend(battle_markup![
+                        @id(&self.cards[&card_instance.card_id].name),
+                        " was destroyed.",
+                    ]);
+                }
+            }
         }
 
         if !history_entry.is_empty() {
@@ -577,7 +602,7 @@ impl Battle {
         }
 
         for action in effect.actions.clone() {
-            self.try_run_card_action(actor, target_id, &action);
+            self.try_run_card_action(actor, target_id, None, &action);
         }
     }
 }
@@ -586,7 +611,7 @@ impl Battle {
 mod tests {
     use futures::executor::block_on;
 
-    use crate::{Battle, BoardItem, CardId, DefaultRandomProvider};
+    use crate::{Battle, BoardItem, CardId, CardInstance, CardInstanceId, DefaultRandomProvider};
 
     #[tokio::test]
     async fn test_deserialize() -> Result<(), String> {
@@ -706,7 +731,10 @@ mod tests {
 
         assert_eq!(
             battle.board.grid.get(2, 0),
-            Some(&BoardItem::Card(CardId::new(0)))
+            Some(&BoardItem::Card(CardInstance::new(
+                CardId::new(0),
+                CardInstanceId::new(1)
+            )))
         );
         assert_eq!(battle.board.grid.get(2, 1), Some(&BoardItem::Inert));
 

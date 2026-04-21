@@ -97,13 +97,19 @@ where {
                 server_handle,
                 asset_build_thread: Some(thread::spawn(move || {
                     while !thread_bool.load(Ordering::Relaxed) {
-                        if let Ok(status) = Command::new("npm")
+                        match Command::new("npm")
                             .args(["run", "build-server"])
                             .env("OUT_DIR", env!("OUT_DIR"))
                             .status()
-                            && !status.success()
                         {
-                            println!("Asset build failed!");
+                            Ok(status) => {
+                                if !status.success() {
+                                    println!("Asset build failed!");
+                                }
+                            }
+                            Err(error) => {
+                                println!("Failed to execute asset build command: {}", error);
+                            }
                         }
                     }
                 })),

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActionTarget, BattleState, CardId } from "./battle";
+import { ActionTarget, BattleState, CardInstance } from "./battle";
 import * as messages from "./messages.js";
 import Card from "./Card.js";
 import Character from "./Character.js";
@@ -13,7 +13,7 @@ messages.init();
 
 export default function App() {
   const [battleState, setBattleState] = useState<BattleState>();
-  const [dragState, setDragState] = useState<CardId>();
+  const [dragState, setDragState] = useState<CardInstance>();
   const [showIntroState, setShowIntroState] = useState<boolean>(false);
 
   useEffect(() => {
@@ -38,6 +38,27 @@ export default function App() {
       setShowIntroState(round <= 1);
     }
   }, [battleState?.battle.round]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key !== "Alt") {
+        return;
+      }
+      console.log(
+        JSON.stringify(
+          battleState?.battle.characters[battleState?.character_id],
+          undefined,
+          2,
+        ),
+        battleState,
+      );
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup function
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [battleState]);
 
   if (!battleState) {
     return <div>Loading...</div>;
@@ -83,25 +104,26 @@ export default function App() {
         >
           <GameBoard battleState={battleState} draggedCard={dragState} />
           <ul id="cards">
-            {battle.characters[characterId].hand.map((cardId) => {
-              const card = battle.cards[cardId];
+            {battle.characters[characterId].hand.map((cardInstance) => {
+              const card = battle.cards[cardInstance.card_id];
               const target = getCardTarget(card);
               let defaultAction: undefined | (() => Promise<void>);
               if (target === ActionTarget.Me) {
                 defaultAction = async () =>
-                  await takeAction(card.id, characterId);
+                  await takeAction(cardInstance, characterId);
               } else if (target === ActionTarget.Others) {
                 const enemies = getLivingEnemies(battle, characterId);
                 if (enemies.length == 1) {
                   defaultAction = async () =>
-                    await takeAction(card.id, enemies[0].id);
+                    await takeAction(cardInstance, enemies[0].id);
                 }
               }
               return (
-                <li key={cardId}>
+                <li key={cardInstance.card_instance_id}>
                   <Card
                     card={card}
-                    onDragStart={() => setDragState(cardId)}
+                    cardInstance={cardInstance}
+                    onDragStart={() => setDragState(cardInstance)}
                     onDragEnd={() => setDragState(undefined)}
                     onClick={async () => {
                       // Take default actions when clicking buttons

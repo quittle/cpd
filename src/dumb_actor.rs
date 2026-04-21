@@ -7,7 +7,7 @@ pub struct DumbActor {
     pub character_id: CharacterId,
 }
 
-fn _pick_random_card(character: &Character, battle: &Battle) -> Option<CardId> {
+fn _pick_random_card(character: &Character, battle: &Battle) -> Option<CardInstance> {
     character
         .hand
         .pick_linear(battle.random_provider.as_ref())
@@ -28,11 +28,11 @@ fn total_average_damage(card: &Card) -> u64 {
         .sum()
 }
 
-fn prioritize_cards(character: &Character, battle: &Battle) -> Vec<CardId> {
+fn prioritize_cards(character: &Character, battle: &Battle) -> Vec<CardInstance> {
     let mut sorted = character.hand.clone();
     sorted.sort_unstable_by(|a, b| {
-        let card_a = &battle.cards[a];
-        let card_b = &battle.cards[b];
+        let card_a = &battle.cards[&a.card_id];
+        let card_b = &battle.cards[&b.card_id];
         let damage_a = total_average_damage(card_a);
         let damage_b = total_average_damage(card_b);
 
@@ -60,13 +60,13 @@ impl Actor for DumbActor {
         let character = battle.get_character(self);
 
         let prioritized_cards = prioritize_cards(character, battle);
-        for card_id in prioritized_cards {
-            let card = &battle.cards[&card_id];
+        for card_instance in prioritized_cards {
+            let card = &battle.cards[&card_instance.card_id];
             if (card.target() == Target::Me
                 && total_average_damage(card) < battle.characters[&self.character_id].health.health)
                 || (card.target() == Target::Any && total_average_damage(card) == 0)
             {
-                return Ok(Action::Act(card_id, self.character_id));
+                return Ok(Action::Act(card_instance, self.character_id));
             }
 
             for (team_id, actor) in &battle.actors {
@@ -79,7 +79,7 @@ impl Actor for DumbActor {
                     )
                 {
                     if card.range >= distance && character.remaining_actions > 0 {
-                        return Ok(Action::Act(card_id, opponent.id));
+                        return Ok(Action::Act(card_instance, opponent.id));
                     } else if character.movement > 0
                         && let Some(path) = battle.board.shortest_path(
                             BoardItem::Character(character.id),

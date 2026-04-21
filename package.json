@@ -1,34 +1,35 @@
 {
-    "name": "cpd",
-    "version": "1.0.0",
-    "type": "module",
-    "scripts": {
-        "build": "NODE_ENV=development vite build --config=vite.config.js ./src/web_actor/static",
-        "lint": "npx eslint ./src/web_actor/static",
-        "lint-fix": "npx eslint --fix ./src/web_actor/static",
-        "format": "npx prettier --check ./src/web_actor/static",
-        "format-fix": "npx prettier --write ./src/web_actor/static",
-        "type-check": "npx tsc --noEmit",
-        "check-all": "npm run lint && npm run format && npm run type-check",
-        "build-server": "NODE_ENV=development vite build --config=vite.config.js --watch ./src/web_actor/static"
-    },
-    "devDependencies": {
-        "@eslint/js": "^9.39.1",
-        "@types/react": "^19.2.2",
-        "@types/react-dom": "^19.2.2",
-        "@vitejs/plugin-react": "^5.1.0",
-        "eslint": "^9.39.1",
-        "eslint-plugin-react": "^7.37.5",
-        "globals": "^16.5.0",
-        "openapi-typescript": "^7.10.1",
-        "prettier": "^3.6.2",
-        "typescript": "^5.9.3",
-        "typescript-eslint": "^8.46.3",
-        "vite": "^7.2.0"
-    },
-    "dependencies": {
-        "react": "^19.2.0",
-        "react-dom": "^19.2.0",
-        "react-error-boundary": "^6.0.0"
-    }
+  "name": "cpd",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "NODE_ENV=development vite build --config=vite.config.js ./src/web_actor/static",
+    "lint": "eslint ./src/web_actor/static",
+    "lint-fix": "eslint --fix ./src/web_actor/static",
+    "format": "prettier --check ./src/web_actor/static",
+    "format-fix": "prettier --write ./src/web_actor/static",
+    "type-check": "tsc --noEmit",
+    "fix-all": "npm run lint-fix && npm run format-fix",
+    "check-all": "npm run lint && npm run format && npm run type-check",
+    "build-server": "NODE_ENV=development vite build --config=vite.config.js --watch ./src/web_actor/static"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^5.1.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.5.0",
+    "openapi-typescript": "^7.10.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.3",
+    "vite": "^7.2.0"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-error-boundary": "^6.0.0"
+  }
 }

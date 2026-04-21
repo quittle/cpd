@@ -1,6 +1,42 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
+pub trait NumericExt: std::ops::AddAssign + std::ops::SubAssign + Copy + Sized {
+    fn one() -> Self;
+
+    fn inc(&mut self) -> Self {
+        *self += Self::one();
+        *self
+    }
+
+    fn dec(&mut self) -> Self {
+        *self -= Self::one();
+        *self
+    }
+}
+
+#[macro_export]
+macro_rules! ImplementNumericExt {
+    ($type:ty) => {
+        impl NumericExt for $type {
+            fn one() -> Self {
+                1
+            }
+        }
+    };
+}
+
+ImplementNumericExt!(i8);
+ImplementNumericExt!(u8);
+ImplementNumericExt!(i16);
+ImplementNumericExt!(u16);
+ImplementNumericExt!(i32);
+ImplementNumericExt!(u32);
+ImplementNumericExt!(i64);
+ImplementNumericExt!(u64);
+ImplementNumericExt!(isize);
+ImplementNumericExt!(usize);
+
 pub trait VecExt<T> {
     /// Removes the first occurrence of `target` from the vector, returning it if found.
     fn remove_first_match<F>(&mut self, predicate: F) -> Option<T>
@@ -67,5 +103,12 @@ mod tests {
         assert_eq!(*member, 1);
         *member = 9;
         assert_eq!(map[&"entry"], 9);
+    }
+
+    #[test]
+    fn test_numeric_ext() {
+        let mut x: i32 = 5;
+        assert_eq!(x.inc(), 6);
+        assert_eq!(x.dec(), 5);
     }
 }
