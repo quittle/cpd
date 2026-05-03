@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useId, useRef } from "react";
+import React, { useId, useLayoutEffect, useRef } from "react";
 
 export interface TooltipProps {
   title: string;
@@ -14,7 +14,7 @@ export default function Tooltip(props: TooltipProps) {
   const anchorName = `--${useId()}`;
 
   useLayoutEffect(() => {
-    anchorRef.current.style["anchorName"] = anchorName;
+    anchorRef.current.style["anchorName"] = anchorName; // eslint-disable-line dot-notation
   }, [anchor, anchorName]);
 
   return (

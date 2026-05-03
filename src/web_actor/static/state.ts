@@ -1,5 +1,8 @@
-import type { CardId, CharacterId, ObjectId, CardInstance } from "./battle";
+import type { CardId, CardInstance, CharacterId, ObjectId } from "./battle";
+
 import type { Coordinate } from "./utils";
+
+/* eslint camelcase: "off" */
 
 export async function takeAction(card: CardInstance, targetId: CharacterId) {
   await fetch("/act", {
@@ -41,7 +44,7 @@ export async function move(targetId: CharacterId, to: Coordinate) {
     },
     body: JSON.stringify({
       target_id: targetId,
-      to: to,
+      to,
     }),
   });
 }

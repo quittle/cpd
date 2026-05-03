@@ -1,13 +1,14 @@
-import React, { useState } from "react";
 import type { BattleState, CardInstance, Character } from "./battle";
+import React, { useState } from "react";
+import { assetUrl, getPlayerCoordinate, isAdjacent } from "./utils";
 import {
   isBoardItemCard,
   isBoardItemCharacter,
   isBoardItemInert,
 } from "./battle";
-import type { Coordinate } from "./utils";
-import { assetUrl, getPlayerCoordinate, isAdjacent } from "./utils";
 import { move, takeAction, takeContent } from "./state";
+
+import type { Coordinate } from "./utils";
 import { isCardEligible } from "./Card";
 
 export function GameBoard(props: {
@@ -30,7 +31,7 @@ export function GameBoard(props: {
             {row.map((cell, x) => {
               let image: string | undefined;
               let character: Character | undefined;
-              let isPlayer;
+              let isPlayer: boolean;
               let isInert = false;
               let isClickable: boolean;
               if (isBoardItemCharacter(cell)) {
@@ -38,7 +39,7 @@ export function GameBoard(props: {
                 if (character.image !== null) {
                   image = assetUrl(character.image);
                 }
-                if (character.health == 0) {
+                if (character.health === 0) {
                   image = assetUrl("skull.png");
                 }
                 isPlayer = props.battleState.character_id === cell.id;
@@ -59,7 +60,7 @@ export function GameBoard(props: {
               // Only ineligible if there is actively a card being dragged and that card isn't eligible.
               const isIneligible =
                 props.draggedCard !== undefined &&
-                (character?.health == 0 ||
+                ((character?.health ?? 0) === 0 ||
                   !isCardEligible(isPlayer, props.draggedCard, battle));
 
               return (

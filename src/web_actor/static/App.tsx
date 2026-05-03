@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from "react";
-import type { BattleState, CardInstance } from "./battle";
-import { ActionTarget } from "./battle";
 import * as messages from "./messages.js";
+
+import type { BattleState, CardInstance } from "./battle";
+import React, { useEffect, useState } from "react";
+import { getCardTarget, getLivingEnemies } from "./utils.js";
+
+import { ActionTarget } from "./battle";
+import BattleHistory from "./BattleHistory.js";
 import Card from "./Card.js";
 import Character from "./Character.js";
-import BattleHistory from "./BattleHistory.js";
-import { getCardTarget, getLivingEnemies } from "./utils.js";
-import { takeAction } from "./state.js";
-import { StoryCard } from "./StoryCard.js";
 import { GameBoard } from "./GameBoard.js";
+import { StoryCard } from "./StoryCard.js";
+import { takeAction } from "./state.js";
 
 messages.init();
 
@@ -21,7 +23,7 @@ export default function App() {
     // Throwaway
     fetch("/info");
 
-    const onBattleState = (e) => {
+    const onBattleState: (MessageEvent) => void = (e) => {
       const newBattleState: BattleState = JSON.parse(e.data);
       setBattleState(newBattleState);
 
@@ -40,7 +42,7 @@ export default function App() {
   }, [setBattleState]);
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Alt") {
         return;
       }
@@ -114,12 +116,12 @@ export default function App() {
               let defaultAction: undefined | (() => Promise<void>);
               if (target === ActionTarget.Me) {
                 defaultAction = async () =>
-                  takeAction(cardInstance, characterId);
+                  await takeAction(cardInstance, characterId);
               } else if (target === ActionTarget.Others) {
                 const enemies = getLivingEnemies(battle, characterId);
-                if (enemies.length == 1) {
+                if (enemies.length === 1) {
                   defaultAction = async () =>
-                    takeAction(cardInstance, enemies[0].id);
+                    await takeAction(cardInstance, enemies[0].id);
                 }
               }
               return (

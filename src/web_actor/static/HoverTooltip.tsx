@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import type { TooltipProps } from "./Tooltip";
+
 import Tooltip from "./Tooltip";
+import type { TooltipProps } from "./Tooltip";
 
 export default function HoverTooltip(props: TooltipProps) {
   const { anchor } = props;

@@ -1,6 +1,7 @@
-import React from "react";
 import type { Battle, Card, CardInstance } from "./battle";
+
 import { ActionTarget } from "./battle";
+import React from "react";
 import { getCardTarget } from "./utils";
 
 export function isCardEligible(
@@ -18,6 +19,7 @@ export function isCardEligible(
     case ActionTarget.Any:
       return true;
   }
+  throw new Error(`Unrecognized ActionTarget: ${target}`);
 }
 
 export default function Card(props: {

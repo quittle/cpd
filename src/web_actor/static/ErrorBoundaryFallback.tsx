@@ -1,5 +1,5 @@
-import React from "react";
 import type { FallbackProps } from "react-error-boundary";
+import React from "react";
 
 export default function ErrorBoundaryFallback({
   error,
@@ -12,7 +12,7 @@ export default function ErrorBoundaryFallback({
       <h1>Something went wrong :(</h1>
       {isError ? (
         <pre style={{ color: "red" }}>
-          {error.stack ?? error.name + " " + error.message}
+          {error.stack ?? `${error.name} ${error.message}`}
         </pre>
       ) : (
         <pre style={{ color: "red" }}>

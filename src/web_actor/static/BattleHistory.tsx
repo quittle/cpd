@@ -1,10 +1,12 @@
-import React from "react";
 import type { BattleHistoryEntry, TypedText } from "./battle";
+
+import React from "react";
 
 function convert(typedText: TypedText): React.ReactNode {
   if ("Text" in typedText) {
     return typedText.Text;
-  } else if ("Typed" in typedText) {
+  }
+  if ("Typed" in typedText) {
     const [battleType, text] = typedText.Typed;
     switch (battleType) {
       case "Id":
@@ -14,18 +16,18 @@ function convert(typedText: TypedText): React.ReactNode {
       case "Damage":
         return <b>{text}</b>;
     }
-  } else {
-    throw new Error(
-      `Invalid TypedText encountered: ${JSON.stringify(typedText)}`,
-    );
   }
+
+  throw new Error(
+    `Invalid TypedText encountered: ${JSON.stringify(typedText)}`,
+  );
 }
 
 export default function BattleHistory(props: {
   history: BattleHistoryEntry[];
 }) {
   // The <li> is relatively safe because the entries are append only
-  // The spread entry text is to suppress missing keys. No good way to treat
+  // the spread entry text is to suppress missing keys. No good way to treat
   // this as a list because content could contain multiple entries with the same
   // values so no reasonable key exists.
   return (

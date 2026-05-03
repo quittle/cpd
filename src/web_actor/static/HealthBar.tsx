@@ -28,7 +28,7 @@ const HealthBar: React.FC<HealthBarProps> = ({
       }}
     >
       <span style={{ color: valueTextColor }}>{value}</span>
-      <span style={{ color: maxTextColor }}>{value == max ? "" : max}</span>
+      <span style={{ color: maxTextColor }}>{value === max ? "" : max}</span>
     </div>
   );
 };

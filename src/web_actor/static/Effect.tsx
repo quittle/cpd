@@ -1,8 +1,9 @@
 import React, { useState } from "react";
+
 import Badge from "./Badge";
 import type { Effect } from "./battle";
-import { assetUrl } from "./utils";
 import HoverTooltip from "./HoverTooltip";
+import { assetUrl } from "./utils";
 
 export default function Effect(props: { effect: Effect; count: number }) {
   const { effect, count } = props;

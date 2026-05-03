@@ -1,7 +1,8 @@
-import React from "react";
 import type { BattleState, CharacterId, Content } from "./battle";
 import { assetPath, describeContent, getCharacterCoordinate } from "./utils";
+
 import { PopUp } from "./PopUp";
+import React from "react";
 import { takeContent } from "./state";
 
 export default function Container(props: {

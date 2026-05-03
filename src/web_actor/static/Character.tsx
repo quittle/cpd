@@ -1,18 +1,18 @@
-import React from "react";
 import type {
-  BattleState,
-  CharacterId,
   Effect as BattleEffect,
+  BattleState,
   CardInstance,
+  CharacterId,
 } from "./battle";
-import { Character } from "./battle";
 import { assetPath, countEntries, cssUrl } from "./utils";
+import { bolt, footsteps } from "./images";
 import { pass, takeAction } from "./state";
-import { isCardEligible } from "./Card";
-import { footsteps, bolt } from "./images";
+import { Character } from "./battle";
 import Container from "./Container";
-import HealthBar from "./HealthBar";
 import Effect from "./Effect";
+import HealthBar from "./HealthBar";
+import React from "react";
+import { isCardEligible } from "./Card";
 
 export default function Character(props: {
   isPlayer: boolean;
@@ -34,7 +34,7 @@ export default function Character(props: {
   // Only ineligible if there is actively a card being dragged and that card isn't eligible.
   const isIneligible =
     draggedCard !== undefined &&
-    (character.health == 0 || !isCardEligible(isPlayer, draggedCard, battle));
+    (character.health === 0 || !isCardEligible(isPlayer, draggedCard, battle));
   return (
     <div
       className="character"

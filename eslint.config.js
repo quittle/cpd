@@ -8,12 +8,42 @@ export default [
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
   { languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
   { languageOptions: { globals: globals.browser } },
-  pluginJs.configs.recommended,
+  pluginJs.configs.all,
   ...tseslint.configs.recommended,
   reactPlugin.configs.flat.recommended,
   reactHooks.configs.flat.recommended,
   {
     rules: {
+      "no-magic-numbers": "off",
+      "no-plusplus": "off",
+      "id-length": "off",
+      "no-ternary": "off",
+      "func-style": "off",
+      "sort-keys": "off",
+      "no-undefined": "off",
+      "max-lines-per-function": "off",
+      "default-case": "off",
+      "max-statements": "off",
+      // "@typescript-eslint/switch-exhaustiveness-check": [
+      //   "error",
+      //   {
+      //     allowDefaultCaseForExhaustiveSwitch: false,
+      //     requireDefaultForNonUnion: true,
+      //   },
+      // ],
+      "no-duplicate-imports": [
+        "error",
+        { allowSeparateTypeImports: true, includeExports: true },
+      ],
+      "capitalized-comments": [
+        "error",
+        "always",
+        { ignoreConsecutiveComments: true },
+      ],
+      "one-var": "off",
+      "init-declarations": "off",
+      "no-console": "off",
+      "no-nested-ternary": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
