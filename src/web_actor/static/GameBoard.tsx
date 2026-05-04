@@ -12,8 +12,8 @@ import type { Coordinate } from "./utils";
 import { isCardEligible } from "./Card";
 
 export function GameBoard(props: {
-  battleState: BattleState;
-  draggedCard: CardInstance | undefined;
+  readonly battleState: BattleState;
+  readonly draggedCard: CardInstance | undefined;
 }) {
   const { battle } = props.battleState;
   const [selectedSquare, setSelectedSquare] = useState<Coordinate>();
@@ -66,31 +66,6 @@ export function GameBoard(props: {
               return (
                 <td
                   key={x}
-                  style={{
-                    border: isInert ? 0 : undefined,
-                    borderColor: isSelectedSquare ? "red" : "black",
-                    backgroundImage: image,
-                    opacity: isIneligible ? 0.5 : 1,
-                    cursor: isClickable ? "pointer" : "default",
-                  }}
-                  onDragOver={(e) => {
-                    if (props.draggedCard === undefined) {
-                      return;
-                    }
-
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = isIneligible ? "none" : "move";
-                  }}
-                  onDrop={async (_e) => {
-                    if (
-                      props.draggedCard === undefined ||
-                      character === undefined
-                    ) {
-                      return;
-                    }
-
-                    await takeAction(props.draggedCard, character.id);
-                  }}
                   onClick={async () => {
                     if (isPlayer) {
                       if (isSelectedSquare) {
@@ -124,8 +99,33 @@ export function GameBoard(props: {
                       }
                     }
                   }}
+                  onDragOver={(e) => {
+                    if (props.draggedCard === undefined) {
+                      return;
+                    }
+
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = isIneligible ? "none" : "move";
+                  }}
+                  onDrop={async (_e) => {
+                    if (
+                      props.draggedCard === undefined ||
+                      character === undefined
+                    ) {
+                      return;
+                    }
+
+                    await takeAction(props.draggedCard, character.id);
+                  }}
+                  style={{
+                    border: isInert ? 0 : undefined,
+                    borderColor: isSelectedSquare ? "red" : "black",
+                    backgroundImage: image,
+                    opacity: isIneligible ? 0.5 : 1,
+                    cursor: isClickable ? "pointer" : "default",
+                  }}
                   title={character?.name}
-                ></td>
+                />
               );
             })}
           </tr>

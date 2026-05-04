@@ -1,9 +1,9 @@
 import React, { useId, useLayoutEffect, useRef } from "react";
 
 export interface TooltipProps {
-  title: string;
-  body: string;
-  anchor: HTMLElement;
+  readonly title: string;
+  readonly body: string;
+  readonly anchor: HTMLElement;
 }
 
 export default function Tooltip(props: TooltipProps) {
@@ -20,12 +20,13 @@ export default function Tooltip(props: TooltipProps) {
   return (
     <div
       className="tooltip"
+      role="tooltip"
       style={{
         positionAnchor: anchorName,
       }}
-      role="tooltip"
     >
       <h3>{title}</h3>
+
       <p>{body}</p>
     </div>
   );

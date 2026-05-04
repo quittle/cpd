@@ -15,10 +15,10 @@ import React from "react";
 import { isCardEligible } from "./Card";
 
 export default function Character(props: {
-  isPlayer: boolean;
-  characterId: CharacterId;
-  draggedCard: CardInstance | undefined;
-  battleState: BattleState;
+  readonly isPlayer: boolean;
+  readonly characterId: CharacterId;
+  readonly draggedCard: CardInstance | undefined;
+  readonly battleState: BattleState;
 }) {
   const { isPlayer, characterId, draggedCard, battleState } = props;
   const { battle } = battleState;
@@ -38,9 +38,6 @@ export default function Character(props: {
   return (
     <div
       className="character"
-      style={{
-        opacity: isIneligible ? 0.5 : 1,
-      }}
       onDragOver={(e) => {
         if (draggedCard === undefined) {
           return;
@@ -55,6 +52,9 @@ export default function Character(props: {
         }
 
         await takeAction(draggedCard, characterId);
+      }}
+      style={{
+        opacity: isIneligible ? 0.5 : 1,
       }}
     >
       {character.image ? (
@@ -73,31 +73,34 @@ export default function Character(props: {
       ) : null}
 
       <HealthBar
-        value={character.health}
-        max={character.max_health}
-        foregroundColor="var(--c-health)"
         backgroundColor="var(--c-grey)"
-        valueTextColor="white"
+        foregroundColor="var(--c-health)"
+        max={character.max_health}
         maxTextColor="black"
+        value={character.health}
+        valueTextColor="white"
       />
+
       <div className="bottom">
         <div className="line-1">
           <h3>{character.name}</h3>
+
           <span
-            title="Movement"
             className="movement"
             style={{
               backgroundImage: cssUrl(footsteps),
             }}
+            title="Movement"
           >
             {character.movement}
           </span>
+
           <span
-            title="Actions"
             className="actions"
             style={{
               backgroundImage: cssUrl(bolt),
             }}
+            title="Actions"
           >
             {character.remaining_actions}
           </span>
@@ -105,10 +108,11 @@ export default function Character(props: {
 
         <div className="effects">
           {effects.map(([effect, count]) => (
-            <Effect key={effect.id} effect={effect} count={count} />
+            <Effect count={count} effect={effect} key={effect.id} />
           ))}
         </div>
       </div>
+
       {isPlayer ? (
         <button
           className="character-end-turn"
@@ -119,10 +123,11 @@ export default function Character(props: {
           End Turn <span className="character-end-turn-icon">👍</span>
         </button>
       ) : null}
+
       {contentsOpened ? (
         <Container
-          characterId={characterId}
           battleState={battleState}
+          characterId={characterId}
           contents={character.contains}
           onClose={() => {
             setContentsOpened(false);

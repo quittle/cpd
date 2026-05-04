@@ -74,41 +74,45 @@ export default function App() {
     <div id="app">
       {battleState.battle.introduction ? (
         <StoryCard
-          storyCard={battleState.battle.introduction}
-          show={showIntroState}
           onClose={() => {
             setShowIntroState(false);
           }}
+          show={showIntroState}
+          storyCard={battleState.battle.introduction}
         />
       ) : (
         <></>
       )}
+
       <div style={{ flexGrow: 5 }}>
         <div id="characters">
           <Character
-            isPlayer={true}
+            battleState={battleState}
             characterId={characterId}
             draggedCard={dragState}
-            battleState={battleState}
+            isPlayer
           />
+
           {Object.values(battle.characters)
             .filter((character) => character.id !== characterId)
             .map((character) => (
               <Character
-                isPlayer={false}
-                key={character.id}
+                battleState={battleState}
                 characterId={character.id}
                 draggedCard={dragState}
-                battleState={battleState}
+                isPlayer={false}
+                key={character.id}
               />
             ))}
         </div>
+
         <div
           style={{
             display: "flex",
           }}
         >
           <GameBoard battleState={battleState} draggedCard={dragState} />
+
           <ul id="cards">
             {battle.characters[characterId].hand.map((cardInstance) => {
               const card = battle.cards[cardInstance.card_id];
@@ -129,22 +133,22 @@ export default function App() {
                   <Card
                     card={card}
                     cardInstance={cardInstance}
-                    onDragStart={() => {
-                      setDragState(cardInstance);
-                    }}
-                    onDragEnd={() => {
-                      setDragState(undefined);
-                    }}
+                    enabled={
+                      battle.characters[characterId].remaining_actions > 0
+                    }
+                    hasDefaultAction={defaultAction !== undefined}
                     onClick={async () => {
                       // Take default actions when clicking buttons
                       if (defaultAction) {
                         await defaultAction();
                       }
                     }}
-                    enabled={
-                      battle.characters[characterId].remaining_actions > 0
-                    }
-                    hasDefaultAction={defaultAction !== undefined}
+                    onDragEnd={() => {
+                      setDragState(undefined);
+                    }}
+                    onDragStart={() => {
+                      setDragState(cardInstance);
+                    }}
                   />
                 </li>
               );
@@ -152,6 +156,7 @@ export default function App() {
           </ul>
         </div>
       </div>
+
       <div style={{ flexGrow: 2 }}>
         <BattleHistory history={battle.history} />
       </div>

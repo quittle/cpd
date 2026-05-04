@@ -1,12 +1,12 @@
 import React from "react";
 
 interface HealthBarProps {
-  value: number;
-  max: number;
-  foregroundColor: string;
-  backgroundColor: string;
-  valueTextColor: string;
-  maxTextColor: string;
+  readonly value: number;
+  readonly max: number;
+  readonly foregroundColor: string;
+  readonly backgroundColor: string;
+  readonly valueTextColor: string;
+  readonly maxTextColor: string;
 }
 
 const HealthBar: React.FC<HealthBarProps> = ({
@@ -28,6 +28,7 @@ const HealthBar: React.FC<HealthBarProps> = ({
       }}
     >
       <span style={{ color: valueTextColor }}>{value}</span>
+
       <span style={{ color: maxTextColor }}>{value === max ? "" : max}</span>
     </div>
   );

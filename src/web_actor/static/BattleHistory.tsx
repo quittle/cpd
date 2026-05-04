@@ -28,14 +28,14 @@ function convert(typedText: TypedText): React.ReactNode {
 }
 
 export default function BattleHistory(props: {
-  history: BattleHistoryEntry[];
+  readonly history: BattleHistoryEntry[];
 }) {
   // The <li> is relatively safe because the entries are append only
   // the spread entry text is to suppress missing keys. No good way to treat
   // this as a list because content could contain multiple entries with the same
   // values so no reasonable key exists.
   return (
-    <ol className="battle-history" reversed={true}>
+    <ol className="battle-history" reversed>
       {props.history
         .map((entry, index) => <li key={index}>{...entry.map(convert)}</li>)
         .toReversed()}

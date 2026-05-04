@@ -5,26 +5,29 @@ import type { Effect } from "./battle";
 import HoverTooltip from "./HoverTooltip";
 import { assetUrl } from "./utils";
 
-export default function Effect(props: { effect: Effect; count: number }) {
+export default function Effect(props: {
+  readonly effect: Effect;
+  readonly count: number;
+}) {
   const { effect, count } = props;
 
   const [effectElement, setEffectElement] = useState<HTMLElement>();
 
   return (
-    <Badge key={effect.id} count={count} showCountBelowTwo={false}>
+    <Badge count={count} key={effect.id} showCountBelowTwo={false}>
       <span
-        ref={setEffectElement}
         className="effect"
-        tabIndex={0}
+        ref={setEffectElement}
         style={{
           backgroundImage: assetUrl(effect.image),
         }}
+        tabIndex={0}
       >
         {effectElement ? (
           <HoverTooltip
-            title={effect.name}
-            body={effect.description}
             anchor={effectElement}
+            body={effect.description}
+            title={effect.name}
           />
         ) : null}
       </span>

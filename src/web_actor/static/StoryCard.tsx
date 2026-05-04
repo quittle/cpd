@@ -2,7 +2,9 @@ import React, { useEffect, useRef } from "react";
 import type { StoryCard } from "./battle";
 import { StoryCardEntry } from "./battle";
 
-function StoryCardEntry(props: { entry: StoryCardEntry }): React.ReactNode {
+function StoryCardEntry(props: {
+  readonly entry: StoryCardEntry;
+}): React.ReactNode {
   const { entry } = props;
   if ("h1" in entry) {
     return <h1>{entry.h1}</h1>;
@@ -12,9 +14,9 @@ function StoryCardEntry(props: { entry: StoryCardEntry }): React.ReactNode {
 }
 
 export function StoryCard(props: {
-  storyCard: StoryCard;
-  show: boolean;
-  onClose: () => void;
+  readonly storyCard: StoryCard;
+  readonly show: boolean;
+  readonly onClose: () => void;
 }): React.ReactNode {
   const buttonRef = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -30,8 +32,9 @@ export function StoryCard(props: {
   return (
     <dialog ref={buttonRef}>
       <button onClick={props.onClose}>X</button>
+
       {props.storyCard.map((entry, index) => (
-        <StoryCardEntry key={index} entry={entry} />
+        <StoryCardEntry entry={entry} key={index} />
       ))}
     </dialog>
   );

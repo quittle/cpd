@@ -23,5 +23,5 @@ export default function HoverTooltip(props: TooltipProps) {
     });
   }, [anchor]);
 
-  return shown ? <Tooltip {...props}></Tooltip> : null;
+  return shown ? <Tooltip {...props} /> : null;
 }

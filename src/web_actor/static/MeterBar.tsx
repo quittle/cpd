@@ -1,11 +1,11 @@
 import React from "react";
 
 interface MeterBarProps {
-  value: number;
-  max: number;
-  foregroundColor: string;
-  backgroundColor: string;
-  textColor: string;
+  readonly value: number;
+  readonly max: number;
+  readonly foregroundColor: string;
+  readonly backgroundColor: string;
+  readonly textColor: string;
 }
 
 const MeterBar: React.FC<MeterBarProps> = ({

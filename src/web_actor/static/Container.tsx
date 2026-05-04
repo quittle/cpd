@@ -12,18 +12,20 @@ import React from "react";
 import { takeContent } from "./state";
 
 export default function Container(props: {
-  characterId: CharacterId;
-  battleState: BattleState;
-  contents: Content[];
-  onClose: () => void;
+  readonly characterId: CharacterId;
+  readonly battleState: BattleState;
+  readonly contents: Content[];
+  readonly onClose: () => void;
 }) {
   const character = props.battleState.battle.characters[props.characterId];
   return (
-    <PopUp onClose={props.onClose} className="container">
+    <PopUp className="container" onClose={props.onClose}>
       <div className="header">
         <img src={assetPath(character.image)} />
+
         <h3>{character.name}</h3>
       </div>
+
       <div className="contents">
         {props.contents.map((content) => {
           const { key, assetUrl } = describeContent(
@@ -33,7 +35,6 @@ export default function Container(props: {
           return (
             <button
               key={key}
-              style={{ backgroundImage: assetUrl }}
               onClick={async () => {
                 let item: { card: CardInstance } | { object: ObjectInstance };
 
@@ -52,6 +53,7 @@ export default function Container(props: {
                   item,
                 );
               }}
+              style={{ backgroundImage: assetUrl }}
             />
           );
         })}
