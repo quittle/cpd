@@ -1,4 +1,10 @@
-import type { BattleState, CharacterId, Content } from "./battle";
+import type {
+  BattleState,
+  CardInstance,
+  CharacterId,
+  Content,
+  ObjectInstance,
+} from "./battle";
 import { assetPath, describeContent, getCharacterCoordinate } from "./utils";
 
 import { PopUp } from "./PopUp";
@@ -29,7 +35,8 @@ export default function Container(props: {
               key={key}
               style={{ backgroundImage: assetUrl }}
               onClick={async () => {
-                let item;
+                let item: { card: CardInstance } | { object: ObjectInstance };
+
                 if ("Card" in content) {
                   item = { card: content.Card };
                 } else {

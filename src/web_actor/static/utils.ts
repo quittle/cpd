@@ -147,14 +147,14 @@ export function describeContent(
 ): { key: React.Key; assetUrl: string } {
   if ("Card" in content) {
     return {
-      key: `C${content.Card}`,
+      key: `C${content.Card.card_id}-${content.Card.card_instance_id}`,
       assetUrl: assetUrl("card.png"),
     };
   }
 
   if ("Object" in content) {
     return {
-      key: `O${content.Object}`,
+      key: `O${content.Object.object_id}-${content.Object.object_instance_id}`,
       assetUrl: assetUrl(battle.objects[content.Object.object_id].image),
     };
   }

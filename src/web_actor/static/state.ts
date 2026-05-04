@@ -1,4 +1,4 @@
-import type { CardId, CardInstance, CharacterId, ObjectId } from "./battle";
+import type { CardInstance, CharacterId, ObjectInstance } from "./battle";
 
 import type { Coordinate } from "./utils";
 
@@ -21,7 +21,7 @@ export async function takeAction(card: CardInstance, targetId: CharacterId) {
 export async function takeContent(
   targetId: CharacterId,
   from: Coordinate,
-  item: { card: CardId } | { object: ObjectId },
+  item: { card: CardInstance } | { object: ObjectInstance },
 ) {
   await fetch("/take", {
     method: "POST",

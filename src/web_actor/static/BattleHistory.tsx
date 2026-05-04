@@ -1,4 +1,8 @@
-import type { BattleHistoryEntry, TypedText } from "./battle";
+import {
+  type BattleHistoryEntry,
+  BattleTextEntry,
+  type TypedText,
+} from "./battle";
 
 import React from "react";
 
@@ -9,11 +13,11 @@ function convert(typedText: TypedText): React.ReactNode {
   if ("Typed" in typedText) {
     const [battleType, text] = typedText.Typed;
     switch (battleType) {
-      case "Id":
+      case BattleTextEntry.Id:
         return <b>{text}</b>;
-      case "Attack":
+      case BattleTextEntry.Attack:
         return <b>{text}</b>;
-      case "Damage":
+      case BattleTextEntry.Damage:
         return <b>{text}</b>;
     }
   }

@@ -9,13 +9,22 @@ export default [
   { languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.all,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
   reactPlugin.configs.flat.recommended,
   reactHooks.configs.flat.recommended,
   {
     rules: {
       "no-magic-numbers": "off",
       "no-plusplus": "off",
+      "no-void": ["error", { allowAsStatement: true }],
+      "@typescript-eslint/no-misused-promises": [
+        "error",
+        { checksVoidReturn: { attributes: false } },
+      ],
+      "@typescript-eslint/restrict-template-expressions": [
+        "error",
+        { allowArray: true },
+      ],
       "id-length": "off",
       "no-ternary": "off",
       "func-style": "off",
@@ -24,13 +33,13 @@ export default [
       "max-lines-per-function": "off",
       "default-case": "off",
       "max-statements": "off",
-      // "@typescript-eslint/switch-exhaustiveness-check": [
-      //   "error",
-      //   {
-      //     allowDefaultCaseForExhaustiveSwitch: false,
-      //     requireDefaultForNonUnion: true,
-      //   },
-      // ],
+      "@typescript-eslint/switch-exhaustiveness-check": [
+        "error",
+        {
+          allowDefaultCaseForExhaustiveSwitch: false,
+          requireDefaultForNonUnion: true,
+        },
+      ],
       "no-duplicate-imports": [
         "error",
         { allowSeparateTypeImports: true, includeExports: true },
@@ -60,7 +69,7 @@ export default [
     },
     languageOptions: {
       parserOptions: {
-        // projectService: true,
+        projectService: true,
       },
     },
   },

@@ -21,10 +21,10 @@ export default function App() {
 
   useEffect(() => {
     // Throwaway
-    fetch("/info");
+    void fetch("/info");
 
-    const onBattleState: (MessageEvent) => void = (e) => {
-      const newBattleState: BattleState = JSON.parse(e.data);
+    const onBattleState: (MessageEvent) => void = (e: MessageEvent<string>) => {
+      const newBattleState = JSON.parse(e.data) as BattleState;
       setBattleState(newBattleState);
 
       const { round } = newBattleState.battle;

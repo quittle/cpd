@@ -19,7 +19,7 @@ export function isCardEligible(
     case ActionTarget.Any:
       return true;
   }
-  throw new Error(`Unrecognized ActionTarget: ${target}`);
+  throw new Error(`Unrecognized ActionTarget: ${target as ActionTarget}`);
 }
 
 export default function Card(props: {
