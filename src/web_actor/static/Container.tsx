@@ -19,44 +19,47 @@ export default function Container(props: {
 }) {
   const character = props.battleState.battle.characters[props.characterId];
   return (
-    <PopUp className="container" onClose={props.onClose}>
-      <div className="header">
-        <img src={assetPath(character.image)} />
+    <PopUp onClose={props.onClose}>
+      <div className="container">
+        <div className="header">
+          <img src={assetPath(character.image)} />
 
-        <h3>{character.name}</h3>
-      </div>
+          <h3>{character.name}</h3>
+        </div>
 
-      <div className="contents">
-        {props.contents.map((content) => {
-          const { key, assetUrl } = describeContent(
-            content,
-            props.battleState.battle,
-          );
-          return (
-            <button
-              key={key}
-              onClick={async () => {
-                let item: { card: CardInstance } | { object: ObjectInstance };
+        <div className="contents">
+          {props.contents.map((content) => {
+            const { key, assetUrl } = describeContent(
+              content,
+              props.battleState.battle,
+            );
+            return (
+              <button
+                key={key}
+                onClick={async () => {
+                  let item: { card: CardInstance } | { object: ObjectInstance };
 
-                if ("Card" in content) {
-                  item = { card: content.Card };
-                } else {
-                  item = { object: content.Object };
-                }
+                  if ("Card" in content) {
+                    item = { card: content.Card };
+                  } else {
+                    item = { object: content.Object };
+                  }
 
-                await takeContent(
-                  props.battleState.character_id,
-                  getCharacterCoordinate(
-                    props.battleState.battle,
-                    props.characterId,
-                  ),
-                  item,
-                );
-              }}
-              style={{ backgroundImage: assetUrl }}
-            />
-          );
-        })}
+                  await takeContent(
+                    props.battleState.character_id,
+                    getCharacterCoordinate(
+                      props.battleState.battle,
+                      props.characterId,
+                    ),
+                    item,
+                  );
+                }}
+                style={{ backgroundImage: assetUrl }}
+                type="button"
+              />
+            );
+          })}
+        </div>
       </div>
     </PopUp>
   );

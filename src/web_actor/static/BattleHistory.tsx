@@ -37,7 +37,13 @@ export default function BattleHistory(props: {
   return (
     <ol className="battle-history" reversed>
       {props.history
-        .map((entry, index) => <li key={index}>{...entry.map(convert)}</li>)
+        .map((entry, index) => (
+          <li
+            key={index} // eslint-disable-line react/no-array-index-key
+          >
+            {...entry.map(convert)}
+          </li>
+        ))
         .toReversed()}
     </ol>
   );

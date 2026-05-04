@@ -67,6 +67,7 @@ export default function Character(props: {
           onClick={() => {
             setContentsOpened(true);
           }}
+          type="button"
         >
           Open
         </button>
@@ -119,8 +120,11 @@ export default function Character(props: {
           onClick={async () => {
             await pass();
           }}
+          type="button"
         >
-          End Turn <span className="character-end-turn-icon">👍</span>
+          End Turn 
+{' '}
+<span className="character-end-turn-icon">👍</span>
         </button>
       ) : null}
 

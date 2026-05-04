@@ -64,8 +64,14 @@ async fn handle_act(
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "snake_case")]
 enum TakeItem {
-    Card(usize, usize),
-    Object(usize, usize),
+    Card {
+        card_id: usize,
+        card_instance_id: usize,
+    },
+    Object {
+        object_id: usize,
+        object_instance_id: usize,
+    },
 }
 
 #[derive(Deserialize)]
@@ -92,8 +98,8 @@ async fn handle_take(
                 y: info.from.y,
             },
             match info.item {
-                TakeItem::Card(id, instance_id) => TakeActionItem::Card(id, instance_id),
-                TakeItem::Object(id, instance_id) => TakeActionItem::Object(id, instance_id),
+                TakeItem::Card{card_id, card_instance_id} => TakeActionItem::Card(card_id, card_instance_id),
+                TakeItem::Object{object_id, object_instance_id} => TakeActionItem::Object(object_id, object_instance_id),
             },
         ))))
         .await

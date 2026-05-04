@@ -1,16 +1,13 @@
 import React, { useEffect, useRef } from "react";
-import type { StoryCard } from "./battle";
-import { StoryCardEntry } from "./battle";
+import type { StoryCard, StoryCardEntry } from "./battle";
 
-function StoryCardEntry(props: {
-  readonly entry: StoryCardEntry;
-}): React.ReactNode {
-  const { entry } = props;
+function storyCardEntryToReactNode(entry: StoryCardEntry): React.ReactNode {
   if ("h1" in entry) {
     return <h1>{entry.h1}</h1>;
   } else if ("p" in entry) {
     return <p>{entry.p}</p>;
   }
+  throw new Error(`Unknown StoryCardEntry: ${JSON.stringify(entry)}`);
 }
 
 export function StoryCard(props: {
@@ -31,11 +28,11 @@ export function StoryCard(props: {
 
   return (
     <dialog ref={buttonRef}>
-      <button onClick={props.onClose}>X</button>
+      <button onClick={props.onClose} type="button">
+        X
+      </button>
 
-      {props.storyCard.map((entry, index) => (
-        <StoryCardEntry entry={entry} key={index} />
-      ))}
+      {props.storyCard.map(storyCardEntryToReactNode)}
     </dialog>
   );
 }

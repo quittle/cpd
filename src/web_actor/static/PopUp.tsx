@@ -3,7 +3,6 @@ import React, { useEffect, useRef } from "react";
 export function PopUp(
   props: React.PropsWithChildren<{
     readonly onClose: () => void;
-    readonly className?: string;
   }>,
 ): React.ReactNode {
   const buttonRef = useRef<HTMLDialogElement>(null);
@@ -19,12 +18,13 @@ export function PopUp(
   }, [show, buttonRef]);
 
   return (
-    <dialog className={props.className} ref={buttonRef}>
+    <dialog className="pop-up" ref={buttonRef}>
       <button
         onClick={() => {
           setShow(false);
           props.onClose();
         }}
+        type="button"
       >
         X
       </button>

@@ -81,7 +81,7 @@ export default function App() {
           storyCard={battleState.battle.introduction}
         />
       ) : (
-        <></>
+        undefined
       )}
 
       <div style={{ flexGrow: 5 }}>

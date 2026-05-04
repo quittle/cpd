@@ -52,6 +52,7 @@ export default function Card(props: {
             : "grab"
           : "not-allowed",
       }}
+      type="button"
     >
       <b className="card-header">{props.card.name}</b>
 

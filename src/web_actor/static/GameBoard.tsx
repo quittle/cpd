@@ -27,7 +27,9 @@ export function GameBoard(props: {
     <table className="game-board" style={{ backgroundImage }}>
       <tbody>
         {battle.board.grid.members.map((row, y) => (
-          <tr key={y}>
+          <tr
+            key={y} // eslint-disable-line react/no-array-index-key
+          >
             {row.map((cell, x) => {
               let image: string | undefined;
               let character: Character | undefined;
@@ -65,7 +67,7 @@ export function GameBoard(props: {
 
               return (
                 <td
-                  key={x}
+                  key={x} // eslint-disable-line react/no-array-index-key
                   onClick={async () => {
                     if (isPlayer) {
                       if (isSelectedSquare) {

@@ -21,7 +21,9 @@ export default function ErrorBoundaryFallback({
         </pre>
       )}
 
-      <button onClick={resetErrorBoundary}>Try again</button>
+      <button onClick={resetErrorBoundary} type="button">
+        Try again
+      </button>
     </div>
   );
 }

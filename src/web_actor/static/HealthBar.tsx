@@ -9,14 +9,14 @@ interface HealthBarProps {
   readonly maxTextColor: string;
 }
 
-const HealthBar: React.FC<HealthBarProps> = ({
+export default function HealthBar({
   value,
   max,
   foregroundColor,
   backgroundColor,
   valueTextColor,
   maxTextColor,
-}) => {
+}: HealthBarProps) {
   const percentage = (value / max) * 100;
 
   return (
@@ -32,6 +32,4 @@ const HealthBar: React.FC<HealthBarProps> = ({
       <span style={{ color: maxTextColor }}>{value === max ? "" : max}</span>
     </div>
   );
-};
-
-export default HealthBar;
+}

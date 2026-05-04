@@ -3,6 +3,7 @@ import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import reactPlugin from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
+import pluginPrettier from "eslint-config-prettier/flat";
 
 export default [
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
@@ -10,8 +11,10 @@ export default [
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.all,
   ...tseslint.configs.recommendedTypeChecked,
+  reactPlugin.configs.flat.all,
   reactPlugin.configs.flat.recommended,
   reactHooks.configs.flat.recommended,
+  pluginPrettier,
   {
     rules: {
       "no-magic-numbers": "off",
@@ -24,6 +27,15 @@ export default [
       "@typescript-eslint/restrict-template-expressions": [
         "error",
         { allowArray: true },
+      ],
+      "react/jsx-no-literals": "off",
+      "react/jsx-max-depth": ["error", { max: 3 }],
+      "react/jsx-props-no-spreading": "off",
+      "react/destructuring-assignment": "off",
+      "react/jsx-no-bind": "off",
+      "react/jsx-filename-extension": [
+        "error",
+        { extensions: [".jsx", ".tsx"] },
       ],
       "id-length": "off",
       "no-ternary": "off",

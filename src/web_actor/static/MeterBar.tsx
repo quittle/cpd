@@ -8,13 +8,13 @@ interface MeterBarProps {
   readonly textColor: string;
 }
 
-const MeterBar: React.FC<MeterBarProps> = ({
+export function MeterBar({
   value,
   max,
   foregroundColor,
   backgroundColor,
   textColor,
-}) => {
+}: MeterBarProps) {
   const percentage = (value / max) * 100;
 
   return (
@@ -30,6 +30,4 @@ const MeterBar: React.FC<MeterBarProps> = ({
       </span>
     </div>
   );
-};
-
-export default MeterBar;
+}
