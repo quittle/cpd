@@ -1,225 +1,225 @@
 {
-    "title": "Example Game",
-    "description": "Example Description",
-    "default_hand_size": 5,
-    "default_movement": 3,
-    "introduction": [
-        { "h1": "Spanish Armada" },
-        {
-            "p": "Sailing under the flag of the Spanish crown, you fight for the glory of your homeland. Be it pirates or foreign powers, nothing will stop you on adventure."
-        },
-        {
-            "p": "Ahh, look at this. A ship boldly flying the jolly roger appears on the horizon. This should be fun."
-        }
-    ],
-    "board": {
-        "background": {
-            "image": "ships.png"
-        },
-        "width": 6,
-        "height": 6,
-        "cells": [
-            {
-                "location": [4, 4],
-                "card": 4
-            },
-            {
-                "location": [1, 0],
-                "inert": true
-            },
-            {
-                "location": [
-                    [0, 0],
-                    [0, 5]
-                ],
-                "inert": true
-            },
-            {
-                "location": [
-                    [1, 0],
-                    [5, 0]
-                ],
-                "inert": true
-            },
-            {
-                "location": [
-                    [2, 1],
-                    [5, 1]
-                ],
-                "inert": true
-            },
-            {
-                "location": [
-                    [2, 2],
-                    [5, 2]
-                ],
-                "inert": true
-            },
-            {
-                "location": [
-                    [5, 3],
-                    [5, 4]
-                ],
-                "inert": true
-            },
-            {
-                "location": [
-                    [2, 4],
-                    [3, 4]
-                ],
-                "inert": true
-            },
-            {
-                "location": [
-                    [1, 5],
-                    [5, 5]
-                ],
-                "inert": true
-            }
-        ]
+  "title": "Example Game",
+  "description": "Example Description",
+  "default_hand_size": 5,
+  "default_movement": 3,
+  "introduction": [
+    { "h1": "Spanish Armada" },
+    {
+      "p": "Sailing under the flag of the Spanish crown, you fight for the glory of your homeland. Be it pirates or foreign powers, nothing will stop you on adventure."
     },
-    "cards": [
-        {
-            "id": 0,
-            "name": "Kick",
-            "description": "Deal 0 or 1 damage",
-            "flavor": "Break a leg",
-            "range": 1,
-            "actions": [
-                {
-                    "type": "damage",
-                    "target": "other",
-                    "amount": [0, 1]
-                }
-            ]
-        },
-        {
-            "id": 1,
-            "name": "Punch",
-            "description": "Deal 2 damage",
-            "flavor": "Warning: Not juice",
-            "range": 1,
-            "actions": [
-                {
-                    "type": "damage",
-                    "target": "other",
-                    "amount": 2
-                }
-            ]
-        },
-        {
-            "id": 2,
-            "name": "Bite",
-            "description": "Deal 3 damage",
-            "flavor": "Ew, that's unsanitary",
-            "range": 1,
-            "actions": [
-                {
-                    "type": "damage",
-                    "target": "other",
-                    "amount": 3
-                }
-            ]
-        },
-        {
-            "id": 3,
-            "name": "Rest",
-            "description": "Recover 3 health",
-            "flavor": "Ahh, that's nice",
-            "actions": [
-                {
-                    "type": "heal",
-                    "target": "self",
-                    "amount": 3
-                }
-            ]
-        },
-        {
-            "id": 4,
-            "name": "Reloadable Slingshot",
-            "description": "Deal 1 damage then take another action",
-            "flavor": "Get back at 'em",
-            "range": 3,
-            "actions": [
-                {
-                    "type": "damage",
-                    "target": "other",
-                    "amount": 1
-                },
-                {
-                    "type": "gain_action",
-                    "target": "self",
-                    "amount": 1
-                }
-            ]
-        },
-        {
-            "id": 5,
-            "name": "Slippery Deck",
-            "description": "Move 1 space",
-            "flavor": "Somebody forgot to mop up after the sea.",
-            "actions": [
-                {
-                    "type": "move",
-                    "target": "self",
-                    "amount": 1
-                }
-            ]
-        },
-        {
-            "id": 6,
-            "name": "Dynamite",
-            "description": "Deal 10 damage, then destroy this card",
-            "flavor": "Boom!",
-            "range": 1,
-            "actions": [
-                {
-                    "type": "damage",
-                    "target": "any",
-                    "amount": 10
-                },
-                {
-                    "type": "destroy_self"
-                }
-            ]
-        }
-    ],
-    "teams": [
-        {
-            "name": "Pirates",
-            "members": [
-                {
-                    "name": "Long Neck",
-                    "race": "Human",
-                    "image": "long-neck.png",
-                    "base_health": 5,
-                    "cards": [0, 2],
-                    "location": [1, 2]
-                },
-                {
-                    "name": "Captain Hook",
-                    "race": "Human",
-                    "image": "pirate.png",
-                    "base_health": 5,
-                    "cards": [0, 1, 6],
-                    "location": [1, 1]
-                }
-            ]
-        },
-        {
-            "name": "Spanish Privateers",
-            "members": [
-                {
-                    "name": "Captain",
-                    "is_player": true,
-                    "race": "Human",
-                    "image": "captain.png",
-                    "base_health": 15,
-                    "hand_size": 5,
-                    "cards": [0, 1, 2, 3, 4, 5, 6],
-                    "location": [4, 3]
-                }
-            ]
-        }
+    {
+      "p": "Ahh, look at this. A ship boldly flying the jolly roger appears on the horizon. This should be fun."
+    }
+  ],
+  "board": {
+    "background": {
+      "image": "ships.png"
+    },
+    "width": 6,
+    "height": 6,
+    "cells": [
+      {
+        "location": [4, 4],
+        "card": 4
+      },
+      {
+        "location": [1, 0],
+        "inert": true
+      },
+      {
+        "location": [
+          [0, 0],
+          [0, 5]
+        ],
+        "inert": true
+      },
+      {
+        "location": [
+          [1, 0],
+          [5, 0]
+        ],
+        "inert": true
+      },
+      {
+        "location": [
+          [2, 1],
+          [5, 1]
+        ],
+        "inert": true
+      },
+      {
+        "location": [
+          [2, 2],
+          [5, 2]
+        ],
+        "inert": true
+      },
+      {
+        "location": [
+          [5, 3],
+          [5, 4]
+        ],
+        "inert": true
+      },
+      {
+        "location": [
+          [2, 4],
+          [3, 4]
+        ],
+        "inert": true
+      },
+      {
+        "location": [
+          [1, 5],
+          [5, 5]
+        ],
+        "inert": true
+      }
     ]
+  },
+  "cards": [
+    {
+      "id": 0,
+      "name": "Kick",
+      "description": "Deal 0 or 1 damage",
+      "flavor": "Break a leg",
+      "range": 1,
+      "actions": [
+        {
+          "type": "damage",
+          "target": "other",
+          "amount": [0, 1]
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Punch",
+      "description": "Deal 2 damage",
+      "flavor": "Warning: Not juice",
+      "range": 1,
+      "actions": [
+        {
+          "type": "damage",
+          "target": "other",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Bite",
+      "description": "Deal 3 damage",
+      "flavor": "Ew, that's unsanitary",
+      "range": 1,
+      "actions": [
+        {
+          "type": "damage",
+          "target": "other",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Rest",
+      "description": "Recover 3 health",
+      "flavor": "Ahh, that's nice",
+      "actions": [
+        {
+          "type": "heal",
+          "target": "self",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Reloadable Slingshot",
+      "description": "Deal 1 damage then take another action",
+      "flavor": "Get back at 'em",
+      "range": 3,
+      "actions": [
+        {
+          "type": "damage",
+          "target": "other",
+          "amount": 1
+        },
+        {
+          "type": "gain_action",
+          "target": "self",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Slippery Deck",
+      "description": "Move 1 space",
+      "flavor": "Somebody forgot to mop up after the sea.",
+      "actions": [
+        {
+          "type": "move",
+          "target": "self",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Dynamite",
+      "description": "Deal 10 damage, then destroy this card",
+      "flavor": "Boom!",
+      "range": 1,
+      "actions": [
+        {
+          "type": "damage",
+          "target": "any",
+          "amount": 10
+        },
+        {
+          "type": "destroy_self"
+        }
+      ]
+    }
+  ],
+  "teams": [
+    {
+      "name": "Pirates",
+      "members": [
+        {
+          "name": "Long Neck",
+          "race": "Human",
+          "image": "long-neck.png",
+          "base_health": 5,
+          "cards": [0, 2],
+          "location": [1, 2]
+        },
+        {
+          "name": "Captain Hook",
+          "race": "Human",
+          "image": "pirate.png",
+          "base_health": 5,
+          "cards": [0, 1, 6],
+          "location": [1, 1]
+        }
+      ]
+    },
+    {
+      "name": "Spanish Privateers",
+      "members": [
+        {
+          "name": "Captain",
+          "is_player": true,
+          "race": "Human",
+          "image": "captain.png",
+          "base_health": 15,
+          "hand_size": 5,
+          "cards": [0, 1, 2, 3, 4, 5, 6],
+          "location": [4, 3]
+        }
+      ]
+    }
+  ]
 }

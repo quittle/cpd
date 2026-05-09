@@ -5,24 +5,24 @@ import path from "path";
 
 const outDir = process.env.OUT_DIR;
 if (!outDir) {
-    throw new Error(
-        "OUT_DIR environment variable is not set. Likely run as part of a non-Cargo driven build."
-    );
+  throw new Error(
+    "OUT_DIR environment variable is not set. Likely run as part of a non-Cargo driven build.",
+  );
 }
 
 const isDev = process.env.NODE_ENV === "development";
 const isProd = !isDev;
 
 export default defineConfig({
-    plugins: [
-        react({
-            minify: isProd,
-        }),
-    ],
-    build: {
-        minify: isProd ? "esbuild" : false,
-        sourcemap: true,
-        emptyOutDir: true,
-        outDir: path.join(outDir, "static"),
-    },
+  plugins: [
+    react({
+      minify: isProd,
+    }),
+  ],
+  build: {
+    minify: isProd ? "esbuild" : false,
+    sourcemap: true,
+    emptyOutDir: true,
+    outDir: path.join(outDir, "static"),
+  },
 });

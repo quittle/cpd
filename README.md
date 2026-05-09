@@ -11,11 +11,13 @@ cargo run --bin codegen
 ```
 
 ## Running
+
 ```sh
 cargo run
 ```
 
 To run with a specific file under data
+
 ```sh
 cargo run poison-escape.json
 ```

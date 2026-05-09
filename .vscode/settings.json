@@ -2,5 +2,5 @@
   "rust-analyzer.linkedProjects": ["./Cargo.toml"],
   "vite.autoStart": false,
   "js/ts.tsdk.path": "node_modules/typescript/lib",
-  "prettier.tabWidth": 4
+  "prettier.tabWidth": 2
 }

@@ -1,10 +1,10 @@
 {
-    "compilerOptions": {
-        "jsx": "react",
-        "target": "esnext",
-        "lib": ["dom", "es2023"],
-        "moduleResolution": "bundler",
-        "allowSyntheticDefaultImports": true,
-        "types": ["vite/client"]
-    }
+  "compilerOptions": {
+    "jsx": "react",
+    "target": "esnext",
+    "lib": ["dom", "es2023"],
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "types": ["vite/client"]
+  }
 }
