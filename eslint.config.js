@@ -6,36 +6,30 @@ import reactHooks from "eslint-plugin-react-hooks";
 import pluginPrettier from "eslint-config-prettier/flat";
 
 export default [
-  { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
-  { languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
-  { languageOptions: { globals: globals.browser } },
+  {
+    files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
+    languageOptions: {
+      globals: globals.browser,
+      parserOptions: {
+        projectService: true,
+        ecmaFeatures: { jsx: true },
+      },
+    },
+  },
   pluginJs.configs.all,
   ...tseslint.configs.recommendedTypeChecked,
   reactPlugin.configs.flat.all,
-  reactPlugin.configs.flat.recommended,
   reactHooks.configs.flat.recommended,
   pluginPrettier,
   {
     rules: {
       "no-magic-numbers": "off",
       "no-plusplus": "off",
-      "no-void": ["error", { allowAsStatement: true }],
-      "@typescript-eslint/no-misused-promises": [
+      "no-void": [
         "error",
-        { checksVoidReturn: { attributes: false } },
-      ],
-      "@typescript-eslint/restrict-template-expressions": [
-        "error",
-        { allowArray: true },
-      ],
-      "react/jsx-no-literals": "off",
-      "react/jsx-max-depth": ["error", { max: 3 }],
-      "react/jsx-props-no-spreading": "off",
-      "react/destructuring-assignment": "off",
-      "react/jsx-no-bind": "off",
-      "react/jsx-filename-extension": [
-        "error",
-        { extensions: [".jsx", ".tsx"] },
+        {
+          allowAsStatement: true,
+        },
       ],
       "id-length": "off",
       "no-ternary": "off",
@@ -45,6 +39,40 @@ export default [
       "max-lines-per-function": "off",
       "default-case": "off",
       "max-statements": "off",
+      "no-duplicate-imports": [
+        "error",
+        {
+          allowSeparateTypeImports: true,
+          includeExports: true,
+        },
+      ],
+      "capitalized-comments": [
+        "error",
+        "always",
+        {
+          ignoreConsecutiveComments: true,
+        },
+      ],
+      "one-var": "off",
+      "init-declarations": "off",
+      "no-console": "off",
+      "no-nested-ternary": "off",
+    },
+  },
+  {
+    rules: {
+      "@typescript-eslint/no-misused-promises": [
+        "error",
+        {
+          checksVoidReturn: { attributes: false },
+        },
+      ],
+      "@typescript-eslint/restrict-template-expressions": [
+        "error",
+        {
+          allowArray: true,
+        },
+      ],
       "@typescript-eslint/switch-exhaustiveness-check": [
         "error",
         {
@@ -52,19 +80,6 @@ export default [
           requireDefaultForNonUnion: true,
         },
       ],
-      "no-duplicate-imports": [
-        "error",
-        { allowSeparateTypeImports: true, includeExports: true },
-      ],
-      "capitalized-comments": [
-        "error",
-        "always",
-        { ignoreConsecutiveComments: true },
-      ],
-      "one-var": "off",
-      "init-declarations": "off",
-      "no-console": "off",
-      "no-nested-ternary": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
@@ -74,15 +89,30 @@ export default [
         },
       ],
     },
+  },
+  {
     settings: {
       react: {
         version: "detect",
       },
     },
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-      },
+    rules: {
+      "react/jsx-no-literals": "off",
+      "react/jsx-max-depth": [
+        "error",
+        {
+          max: 3,
+        },
+      ],
+      "react/jsx-props-no-spreading": "off",
+      "react/destructuring-assignment": "off",
+      "react/jsx-no-bind": "off",
+      "react/jsx-filename-extension": [
+        "error",
+        {
+          extensions: [".jsx", ".tsx"],
+        },
+      ],
     },
   },
 ];

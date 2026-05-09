@@ -80,9 +80,7 @@ export default function App() {
           show={showIntroState}
           storyCard={battleState.battle.introduction}
         />
-      ) : (
-        undefined
-      )}
+      ) : undefined}
 
       <div style={{ flexGrow: 5 }}>
         <div id="characters">
