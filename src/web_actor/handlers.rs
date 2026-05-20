@@ -98,8 +98,14 @@ async fn handle_take(
                 y: info.from.y,
             },
             match info.item {
-                TakeItem::Card{card_id, card_instance_id} => TakeActionItem::Card(card_id, card_instance_id),
-                TakeItem::Object{object_id, object_instance_id} => TakeActionItem::Object(object_id, object_instance_id),
+                TakeItem::Card {
+                    card_id,
+                    card_instance_id,
+                } => TakeActionItem::Card(card_id, card_instance_id),
+                TakeItem::Object {
+                    object_id,
+                    object_instance_id,
+                } => TakeActionItem::Object(object_id, object_instance_id),
             },
         ))))
         .await

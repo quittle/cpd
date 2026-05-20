@@ -25,6 +25,28 @@ struct Turn {
 }
 
 type StoryCard = battle_file::StoryCard;
+pub type EndConditionType = battle_file::EndConditionType;
+
+#[derive(Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub enum EndConditionCriterion {
+    TeamMemberDeath {
+        ids: Vec<CharacterId>,
+    },
+    ObjectOwned {
+        character_id: CharacterId,
+        object_id: ObjectId,
+    },
+}
+
+#[derive(Serialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct EndCondition {
+    pub title: String,
+    pub description: String,
+    pub condition_type: EndConditionType,
+    pub condition: EndConditionCriterion,
+}
 
 #[derive(Serialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
@@ -46,6 +68,8 @@ pub struct Battle {
     pub asset_directory: Option<PathBuf>,
     pub board: Board,
     pub background_image: Option<String>,
+    pub end_conditions: Vec<EndCondition>,
+    pub end_state: Option<EndConditionType>,
 }
 
 unsafe impl Sync for Battle {}
@@ -110,18 +134,32 @@ impl Battle {
             .unwrap_or_else(|| panic!("Unable to find actor with character id: {character_id}"))
     }
 
-    /// Checks if only one team is alive and returns that team. Returns None if multiple teams are alive or if None are
-    pub fn check_only_one_team_alive(&self) -> Option<TeamId> {
-        let mut cur_id = None;
-        for (team_id, actor) in &self.actors {
-            if !self.get_character(actor.as_ref()).is_dead() {
-                if cur_id.is_some() && cur_id != Some(*team_id) {
-                    return None;
-                }
-                cur_id = Some(*team_id);
+    fn did_battle_reach_end_condition(&self) -> Option<EndConditionType> {
+        for end_condition in &self.end_conditions {
+            if self.evaluate_condition(&end_condition.condition) {
+                return Some(end_condition.condition_type);
             }
         }
-        cur_id
+        None
+    }
+
+    /// Returns true if the condition is met.
+    fn evaluate_condition(&self, condition: &EndConditionCriterion) -> bool {
+        match condition {
+            EndConditionCriterion::TeamMemberDeath { ids } => {
+                ids.iter().all(|&id| self.characters[&id].is_dead())
+            }
+            EndConditionCriterion::ObjectOwned {
+                character_id,
+                object_id,
+            } => self.characters[character_id]
+                .contains
+                .iter()
+                .any(|content| match content {
+                    Content::Object(obj_instance) => &obj_instance.object_id == object_id,
+                    Content::Card(_) => false,
+                }),
+        }
     }
 
     fn get_all_character_amounts_in_range(
@@ -405,6 +443,10 @@ impl Battle {
                 match action_result {
                     Ok(request) => {
                         self.handle_action(&turn.character, request);
+                        if let Some(end_state) = self.did_battle_reach_end_condition() {
+                            self.end_state = Some(end_state);
+                            return Ok(());
+                        }
                     }
                     Err(ActionError::Failure(failure)) => {
                         println!("Error processing {}: {}", turn.character, failure.message);
@@ -414,23 +456,23 @@ impl Battle {
                     }
                 }
             }
-            if self.check_only_one_team_alive().is_some() {
-                return Ok(());
-            }
         }
         Ok(())
     }
 
     pub async fn run_to_completion(&mut self) -> Result<(), ExitCode> {
-        let mut surviving_team = None;
-        while surviving_team.is_none() {
+        while self.end_state.is_none() {
             self.advance().await?;
-            surviving_team = self.check_only_one_team_alive()
         }
-        let team_id = surviving_team.unwrap();
-        let team = self.get_team_from_id(team_id).unwrap();
-        self.history
-            .push(battle_markup![format!("{} won.", team.name)]);
+        let history_line: BattleText = match self.end_state.unwrap() {
+            EndConditionType::Win => {
+                battle_markup!["Congratulations, you won."]
+            }
+            EndConditionType::Loss => {
+                battle_markup!["Sorry, you lost."]
+            }
+        };
+        self.history.push(history_line);
 
         for (_, actor) in &self.actors {
             actor.on_game_over(self).await;
@@ -690,7 +732,8 @@ mod tests {
                             "race": "Human",
                             "base_health": 15,
                             "cards": [0],
-                            "location": [1, 0]
+                            "location": [1, 0],
+                            "is_player": true
                         }
                     ]
                 }

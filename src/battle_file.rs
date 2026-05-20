@@ -24,7 +24,38 @@ pub struct Battle {
     pub cards: Vec<Card>,
     #[serde(default)]
     pub objects: Vec<Object>,
+    #[serde(default)]
+    pub end_conditions: Vec<EndCondition>,
     pub teams: Vec<Team>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct EndCondition {
+    pub title: String,
+    pub description: String,
+    #[serde(rename = "type")]
+    pub condition_type: EndConditionType,
+    pub condition: EndConditionCriterion,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, JsonSchema, Copy)]
+#[serde(rename_all = "lowercase")]
+pub enum EndConditionType {
+    Win,
+    Loss,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, JsonSchema)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum EndConditionCriterion {
+    TeamMemberDeath {
+        ids: Vec<usize>,
+    },
+    ObjectOwned {
+        character_id: usize,
+        object_id: ObjectId,
+    },
 }
 
 fn map_serde_error(source: &str, err: serde_json::Error) -> String {
@@ -80,7 +111,7 @@ impl Battle {
 
 pub type StoryCard = Vec<StoryCardEntry>;
 
-#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
 #[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub enum StoryCardEntry {
     H1(String),
@@ -384,7 +415,8 @@ mod tests {
                             "base_health": 10,
                             "cards": [0],
                             "effects": [0],
-                            "location": [0, 0]
+                            "location": [0, 0],
+                            "is_player": true
                         }
                     ]
                 }
@@ -444,5 +476,281 @@ mod tests {
             maybe_battle.unwrap_err(),
             "Multiple playable team members found."
         );
+    }
+
+    #[test]
+    fn test_end_conditions_object_owned() -> Result<(), String> {
+        let data = r#"{
+            "title": "Test Battle",
+            "description": "Test",
+            "default_hand_size": 1,
+            "board": { "width": 1, "height": 1 },
+            "cards": [],
+            "objects": [
+                {
+                    "id": 0,
+                    "name": "Key",
+                    "description": "A key"
+                }
+            ],
+            "end_conditions": [
+                {
+                    "title": "Find the Key",
+                    "description": "Locate the key",
+                    "type": "win",
+                    "condition": {
+                        "type": "object_owned",
+                        "object_id": 0,
+                        "character_id": 0
+                    }
+                }
+            ],
+            "teams": [
+                {
+                    "name": "Team A",
+                    "members": [
+                        {
+                            "name": "Player",
+                            "is_player": true,
+                            "race": "Human",
+                            "base_health": 10,
+                            "cards": [],
+                            "location": [0, 0]
+                        }
+                    ]
+                }
+            ]
+        }"#;
+
+        let battle: Battle = Battle::parse_from_str(data)?;
+
+        assert_eq!(battle.end_conditions.len(), 1);
+        assert_eq!(battle.end_conditions[0].title, "Find the Key");
+        assert_eq!(
+            battle.end_conditions[0].condition_type,
+            EndConditionType::Win
+        );
+        match &battle.end_conditions[0].condition {
+            EndConditionCriterion::ObjectOwned { object_id, .. } => assert_eq!(*object_id, 0),
+            _ => panic!("Expected ObjectOwned condition"),
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_end_conditions_team_member_death() -> Result<(), String> {
+        let data = r#"{
+            "title": "Test Battle",
+            "description": "Test",
+            "default_hand_size": 1,
+            "board": { "width": 1, "height": 1 },
+            "cards": [],
+            "end_conditions": [
+                {
+                    "title": "Enemy Defeated",
+                    "description": "All enemies must be defeated",
+                    "type": "win",
+                    "condition": {
+                        "type": "team_member_death",
+                        "ids": [1, 2]
+                    }
+                }
+            ],
+            "teams": [
+                {
+                    "name": "Team A",
+                    "members": [
+                        {
+                            "name": "Player",
+                            "is_player": true,
+                            "race": "Human",
+                            "base_health": 10,
+                            "cards": [],
+                            "location": [0, 0]
+                        }
+                    ]
+                },
+                {
+                    "name": "Team B",
+                    "members": [
+                        {
+                            "name": "Enemy 1",
+                            "race": "Human",
+                            "base_health": 10,
+                            "cards": [],
+                            "location": [0, 0]
+                        },
+                        {
+                            "name": "Enemy 2",
+                            "race": "Human",
+                            "base_health": 10,
+                            "cards": [],
+                            "location": [0, 0]
+                        }
+                    ]
+                }
+            ]
+        }"#;
+
+        let battle: Battle = Battle::parse_from_str(data)?;
+
+        assert_eq!(battle.end_conditions.len(), 1);
+        assert_eq!(battle.end_conditions[0].title, "Enemy Defeated");
+        assert_eq!(
+            battle.end_conditions[0].condition_type,
+            EndConditionType::Win
+        );
+        match &battle.end_conditions[0].condition {
+            EndConditionCriterion::TeamMemberDeath { ids } => {
+                assert_eq!(ids.len(), 2);
+                assert_eq!(ids[0], 1);
+                assert_eq!(ids[1], 2);
+            }
+            _ => panic!("Expected TeamMemberDeath condition"),
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_end_conditions_loss_condition() -> Result<(), String> {
+        let data = r#"{
+            "title": "Test Battle",
+            "description": "Test",
+            "default_hand_size": 1,
+            "board": { "width": 1, "height": 1 },
+            "cards": [],
+            "end_conditions": [
+                {
+                    "title": "Game Over",
+                    "description": "You are defeated",
+                    "type": "loss",
+                    "condition": {
+                        "type": "team_member_death",
+                        "ids": [0]
+                    }
+                }
+            ],
+            "teams": [
+                {
+                    "name": "Team A",
+                    "members": [
+                        {
+                            "name": "Player",
+                            "is_player": true,
+                            "race": "Human",
+                            "base_health": 10,
+                            "cards": [],
+                            "location": [0, 0]
+                        }
+                    ]
+                }
+            ]
+        }"#;
+
+        let battle: Battle = Battle::parse_from_str(data)?;
+
+        assert_eq!(battle.end_conditions.len(), 1);
+        assert_eq!(
+            battle.end_conditions[0].condition_type,
+            EndConditionType::Loss
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_multiple_end_conditions() -> Result<(), String> {
+        let data = r#"{
+            "title": "Test Battle",
+            "description": "Test",
+            "default_hand_size": 1,
+            "board": { "width": 1, "height": 1 },
+            "cards": [],
+            "objects": [
+                {
+                    "id": 0,
+                    "name": "Treasure",
+                    "description": "Gold"
+                }
+            ],
+            "end_conditions": [
+                {
+                    "title": "Find Treasure",
+                    "description": "Get the treasure",
+                    "type": "win",
+                    "condition": {
+                        "type": "object_owned",
+                        "object_id": 0,
+                        "character_id": 0
+                    }
+                },
+                {
+                    "title": "Find Artifact",
+                    "description": "Alternative win condition",
+                    "type": "win",
+                    "condition": {
+                        "type": "team_member_death",
+                        "ids": [1, 2]
+                    }
+                }
+            ],
+            "teams": [
+                {
+                    "name": "Team A",
+                    "members": [
+                        {
+                            "name": "Player",
+                            "is_player": true,
+                            "race": "Human",
+                            "base_health": 10,
+                            "cards": [],
+                            "location": [0, 0]
+                        }
+                    ]
+                }
+            ]
+        }"#;
+
+        let battle: Battle = Battle::parse_from_str(data)?;
+
+        assert_eq!(battle.end_conditions.len(), 2);
+        assert_eq!(battle.end_conditions[0].title, "Find Treasure");
+        assert_eq!(battle.end_conditions[1].title, "Find Artifact");
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_empty_end_conditions() -> Result<(), String> {
+        let data = r#"{
+            "title": "Test Battle",
+            "description": "Test",
+            "default_hand_size": 1,
+            "board": { "width": 1, "height": 1 },
+            "cards": [],
+            "teams": [
+                {
+                    "name": "Team A",
+                    "members": [
+                        {
+                            "name": "Player",
+                            "is_player": true,
+                            "race": "Human",
+                            "base_health": 10,
+                            "cards": [],
+                            "location": [0, 0]
+                        }
+                    ]
+                }
+            ]
+        }"#;
+
+        let battle: Battle = Battle::parse_from_str(data)?;
+
+        assert_eq!(battle.end_conditions.len(), 0);
+
+        Ok(())
     }
 }

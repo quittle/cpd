@@ -28,6 +28,8 @@ export interface components {
             effects: {
                 [key: string]: components["schemas"]["Effect"];
             };
+            end_conditions: components["schemas"]["EndCondition"][];
+            end_state?: components["schemas"]["EndConditionType"] | null;
             history: components["schemas"]["TemplateEntry"][][];
             introduction?: components["schemas"]["StoryCardEntry"][] | null;
             objects: {
@@ -160,6 +162,24 @@ export interface components {
         };
         /** Format: uint */
         EffectId: number;
+        EndCondition: {
+            condition: components["schemas"]["EndConditionCriterion"];
+            condition_type: components["schemas"]["EndConditionType"];
+            description: string;
+            title: string;
+        };
+        EndConditionCriterion: {
+            TeamMemberDeath: {
+                ids: components["schemas"]["CharacterId"][];
+            };
+        } | {
+            ObjectOwned: {
+                character_id: components["schemas"]["CharacterId"];
+                object_id: components["schemas"]["ObjectId"];
+            };
+        };
+        /** @enum {string} */
+        EndConditionType: EndConditionType;
         Grid: {
             /** Format: uint */
             height: number;
@@ -232,6 +252,8 @@ export type CharacterId = components['schemas']['CharacterId'];
 export type Content = components['schemas']['Content'];
 export type Effect = components['schemas']['Effect'];
 export type EffectId = components['schemas']['EffectId'];
+export type EndCondition = components['schemas']['EndCondition'];
+export type EndConditionCriterion = components['schemas']['EndConditionCriterion'];
 export type Grid = components['schemas']['Grid'];
 export type Health = components['schemas']['Health'];
 export type Object = components['schemas']['Object'];
@@ -252,6 +274,10 @@ export enum BattleTextEntry {
 export enum CharacterRace {
     Human = "Human",
     Machine = "Machine"
+}
+export enum EndConditionType {
+    win = "win",
+    loss = "loss"
 }
 export enum Target {
     Me = "Me",

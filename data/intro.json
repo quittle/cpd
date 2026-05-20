@@ -36,6 +36,18 @@
       }
     ]
   },
+  "end_conditions": [
+    {
+      "title": "Find the Key",
+      "description": "Find the key hidden somewhere in the forest",
+      "type": "win",
+      "condition": {
+        "type": "object_owned",
+        "object_id": 0,
+        "character_id": 1
+      }
+    }
+  ],
   "effects": [],
   "objects": [
     {

@@ -2,9 +2,9 @@ use std::path::PathBuf;
 
 use crate::{
     Actor, Battle, Board, BoardItem, CardId, CardInstance, CardInstanceId, Character, CharacterId,
-    CharacterRace, DumbActor, EffectId, Health, NumericExt, ObjectId, ObjectInstance,
-    ObjectInstanceId, RandomProvider, Team, TeamId, TerminalActor, U64Range, battle_file,
-    web_actor::WebActor,
+    CharacterRace, DumbActor, EffectId, EndCondition, EndConditionCriterion, Health, NumericExt,
+    ObjectId, ObjectInstance, ObjectInstanceId, RandomProvider, Team, TeamId, TerminalActor,
+    U64Range, battle_file, web_actor::WebActor,
 };
 use futures::future::join_all;
 
@@ -30,6 +30,121 @@ where
     Ok(())
 }
 
+fn get_player_team_id(battle: &battle_file::Battle) -> Result<usize, String> {
+    for (team_id, team) in battle.teams.iter().enumerate() {
+        if team.members.iter().any(|member| member.is_player) {
+            return Ok(team_id);
+        }
+    }
+    Err("No player team found".to_string())
+}
+
+fn validate_and_get_additional_end_conditions(
+    battle: &battle_file::Battle,
+) -> Result<Vec<battle_file::EndCondition>, String> {
+    let team_member_ids = get_all_team_character_ids(battle);
+    for end_condition in battle.end_conditions.iter() {
+        match &end_condition.condition {
+            battle_file::EndConditionCriterion::TeamMemberDeath { ids } => {
+                for id in ids {
+                    if !team_member_ids
+                        .iter()
+                        .any(|(_team_id, character_id, _team_member)| character_id == id)
+                    {
+                        return Err(format!(
+                            "End condition references non-existent character id {id}"
+                        ));
+                    }
+                }
+            }
+            battle_file::EndConditionCriterion::ObjectOwned {
+                character_id,
+                object_id,
+            } => {
+                if !team_member_ids
+                    .iter()
+                    .any(|(_team_id, iter_character_id, _team_member)| {
+                        iter_character_id == character_id
+                    })
+                {
+                    return Err(format!(
+                        "End condition references object id {object_id} that is already owned by a character"
+                    ));
+                }
+                if !battle.objects.iter().any(|object| object.id == *object_id) {
+                    return Err(format!(
+                        "End condition references non-existent object id {object_id}"
+                    ));
+                }
+            }
+        }
+    }
+
+    let has_win_condition = battle
+        .end_conditions
+        .iter()
+        .any(|ec| ec.condition_type == battle_file::EndConditionType::Win);
+    let has_loss_condition = battle
+        .end_conditions
+        .iter()
+        .any(|ec| ec.condition_type == battle_file::EndConditionType::Loss);
+
+    let mut additional_end_conditions = vec![];
+
+    if !has_win_condition {
+        let player_team_id = get_player_team_id(battle)?;
+        let enemy_ids: Vec<usize> = get_all_team_character_ids(battle)
+            .iter()
+            .filter_map(|(team_id, character_id, _team_member)| {
+                if *team_id == player_team_id {
+                    None
+                } else {
+                    Some(*character_id)
+                }
+            })
+            .collect();
+
+        additional_end_conditions.push(battle_file::EndCondition {
+            title: "Victory".to_string(),
+            description: "Game over when all enemies are defeated".to_string(),
+            condition_type: battle_file::EndConditionType::Win,
+            condition: battle_file::EndConditionCriterion::TeamMemberDeath { ids: enemy_ids },
+        });
+    }
+
+    if !has_loss_condition {
+        additional_end_conditions.push(battle_file::EndCondition {
+            title: "Defeated".to_string(),
+            description: "Game over when you are defeated".to_string(),
+            condition_type: battle_file::EndConditionType::Loss,
+            condition: battle_file::EndConditionCriterion::TeamMemberDeath {
+                ids: battle
+                    .teams
+                    .iter()
+                    .flat_map(|team| &team.members)
+                    .enumerate()
+                    .filter_map(|(i, member)| if member.is_player { Some(i) } else { None })
+                    .collect(),
+            },
+        });
+    }
+
+    Ok(additional_end_conditions)
+}
+
+fn get_all_team_character_ids(
+    battle: &battle_file::Battle,
+) -> Vec<(usize, usize, &battle_file::TeamMember)> {
+    battle
+        .teams
+        .iter()
+        .enumerate()
+        .flat_map(|(team_id, team)| team.members.iter().map(move |member| (team_id, member)))
+        .enumerate()
+        .map(|(character_id, (team_id, team_member))| (team_id, character_id, team_member))
+        .collect()
+}
+
 impl Battle {
     pub async fn deserialize(
         data: &str,
@@ -42,12 +157,15 @@ impl Battle {
         validate_ids(&battle.effects, |entry| entry.id)?;
         validate_ids(&battle.objects, |entry| entry.id)?;
 
+        let mut end_conditions = validate_and_get_additional_end_conditions(&battle)?;
+        end_conditions.extend(battle.end_conditions.clone());
+
         let mut board = Board::new(battle.board.width, battle.board.height);
 
         let mut current_card_instance_id = 0usize;
         let mut current_object_instance_id = 0usize;
 
-        for cell in &battle.board.cells.unwrap_or_default() {
+        for cell in battle.board.cells.as_ref().into_iter().flatten() {
             match cell {
                 battle_file::Cell::Card { card, location } => {
                     for (x, y) in location.iter() {
@@ -77,39 +195,31 @@ impl Battle {
             }
         }
 
-        let max_team_size = battle
-            .teams
-            .iter()
-            .map(|team| team.members.len())
-            .max()
-            .unwrap_or(0);
+        let team_character_ids = get_all_team_character_ids(&battle);
 
-        for (team_index, team) in battle.teams.iter().enumerate() {
-            for (index, member) in team.members.iter().enumerate() {
-                let (x, y) = member.location;
-                if !board.grid.is_valid(x, y) {
-                    return Err(format!("Invalid team member position: {x}, {y}"));
-                }
-                // Makes strong assumptions about the way character ids are picked, incrementing in the same order of team and member
-                if let Some(_prev_id) = board.grid.set(
-                    x,
-                    y,
-                    BoardItem::Character(CharacterId::new(team_index * max_team_size + index)),
-                ) {
-                    return Err(format!("Multiple entries found at {x}, {y}"));
-                }
+        for (_team_id, character_id, team_member) in &team_character_ids {
+            let (x, y) = team_member.location;
+            if !board.grid.is_valid(x, y) {
+                return Err(format!("Invalid team member position: {x}, {y}"));
+            }
+            if let Some(_prev_id) =
+                board
+                    .grid
+                    .set(x, y, BoardItem::Character(CharacterId::new(*character_id)))
+            {
+                return Err(format!("Multiple entries found at {x}, {y}"));
+            }
 
-                for item in &member.contains {
-                    match item {
-                        battle_file::Content::Card(id) => {
-                            if battle.cards.len() <= *id {
-                                return Err(format!("Invalid card id {id} for {}", member.name));
-                            }
+            for item in &team_member.contains {
+                match item {
+                    battle_file::Content::Card(id) => {
+                        if battle.cards.len() <= *id {
+                            return Err(format!("Invalid card id {id} for {}", team_member.name));
                         }
-                        battle_file::Content::Object(id) => {
-                            if battle.objects.len() <= *id {
-                                return Err(format!("Invalid object id {id} for {}", member.name));
-                            }
+                    }
+                    battle_file::Content::Object(id) => {
+                        if battle.objects.len() <= *id {
+                            return Err(format!("Invalid object id {id} for {}", team_member.name));
                         }
                     }
                 }
@@ -119,15 +229,16 @@ impl Battle {
         let canonical_asset_directory =
             asset_directory.map(|path_buf| path_buf.canonicalize().unwrap());
         let asset_directory = canonical_asset_directory.as_deref();
-        Ok(Battle {
+        let deserialized_battle = Battle {
             history: vec![],
-            introduction: battle.introduction,
+            introduction: battle.introduction.clone(),
             random_provider,
             default_turn_actions: 1,
             background_image: battle
                 .board
                 .background
-                .and_then(|background| background.image),
+                .as_ref()
+                .and_then(|background| background.image.clone()),
             characters: battle
                 .teams
                 .iter()
@@ -219,46 +330,57 @@ impl Battle {
                     name: team.name.clone(),
                 })
                 .collect(),
-            actors: join_all(
-                battle
-                    .teams
-                    .iter()
-                    .enumerate()
-                    .flat_map(|(team_index, team)| {
-                        team.members
-                            .iter()
-                            .enumerate()
-                            .map(move |(member_index, team_member)| {
-                                let character_id =
-                                    CharacterId::new(team_index * max_team_size + member_index);
-                                async move {
-                                    (
-                                        TeamId::new(team_index.try_into().unwrap()),
-                                        if team_member.is_player {
-                                            if cfg!(feature = "terminal_ui") {
-                                                Box::new(TerminalActor { character_id })
-                                                    as Box<dyn Actor>
-                                            } else {
-                                                Box::new(
-                                                    WebActor::new(character_id, asset_directory)
-                                                        .await
-                                                        .unwrap(),
-                                                )
-                                                    as Box<dyn Actor>
-                                            }
-                                        } else {
-                                            Box::new(DumbActor { character_id }) as Box<dyn Actor>
-                                        },
-                                    )
+            actors: join_all(team_character_ids.iter().map(
+                move |(team_id, character_id, team_member)| {
+                    let is_player = team_member.is_player;
+                    async move {
+                        let character_id = CharacterId::new(*character_id);
+                        (
+                            TeamId::new((*team_id).try_into().unwrap()),
+                            if is_player {
+                                if cfg!(feature = "terminal_ui") {
+                                    Box::new(TerminalActor { character_id }) as Box<dyn Actor>
+                                } else {
+                                    Box::new(
+                                        WebActor::new(character_id, asset_directory).await.unwrap(),
+                                    ) as Box<dyn Actor>
                                 }
-                            })
-                    }),
-            )
+                            } else {
+                                Box::new(DumbActor { character_id }) as Box<dyn Actor>
+                            },
+                        )
+                    }
+                },
+            ))
             .await,
             round: 0,
             board,
-            asset_directory: canonical_asset_directory,
-        })
+            asset_directory: canonical_asset_directory.clone(),
+            end_conditions: end_conditions
+                .iter()
+                .map(|condition| EndCondition {
+                    title: condition.title.clone(),
+                    description: condition.description.clone(),
+                    condition_type: condition.condition_type,
+                    condition: match &condition.condition {
+                        battle_file::EndConditionCriterion::TeamMemberDeath { ids } => {
+                            EndConditionCriterion::TeamMemberDeath {
+                                ids: ids.iter().map(|id| CharacterId::new(*id)).collect(),
+                            }
+                        }
+                        battle_file::EndConditionCriterion::ObjectOwned {
+                            character_id,
+                            object_id,
+                        } => EndConditionCriterion::ObjectOwned {
+                            character_id: CharacterId::new(*character_id),
+                            object_id: ObjectId::new(*object_id),
+                        },
+                    },
+                })
+                .collect(),
+            end_state: None,
+        };
+        Ok(deserialized_battle)
     }
 }
 
