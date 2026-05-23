@@ -11,7 +11,8 @@
     "type-check": "tsc --noEmit",
     "fix-all": "npm run lint-fix && npm run format-fix",
     "check-all": "npm run lint && npm run format && npm run type-check",
-    "build-server": "NODE_ENV=development vite build --config=vite.config.js --watch ./src/web_actor/static"
+    "build-server": "NODE_ENV=development vite build --config=vite.config.js --watch ./src/web_actor/static",
+    "test": "npm run check-all"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
