@@ -23,5 +23,4 @@ jobs:
 
       - name: Run validation script
         run: |
-          nvm install
           ./validate_everything
