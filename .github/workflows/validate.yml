@@ -15,10 +15,11 @@ jobs:
       - name: Install Rustup
         run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-      - name: Setup Node.js with NVM
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: .nvmrc
+      - name: NVM Install
+        run: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+          . $HOME/.nvm/nvm.sh
+          nvm install
 
       - name: Run validation script
         run: |
