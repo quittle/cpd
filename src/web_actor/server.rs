@@ -90,28 +90,27 @@ where {
         #[cfg(debug_assertions)]
         {
             let asset_build_thread_terminate: Arc<AtomicBool> = Default::default();
-            let thread_bool = asset_build_thread_terminate.clone();
+            let asset_build_thread_terminate_clone = asset_build_thread_terminate.clone();
             Ok(Self {
                 _phantom: PhantomData,
                 server_thread: Some(server_thread),
                 server_handle,
                 asset_build_thread: Some(thread::spawn(move || {
-                    while !thread_bool.load(Ordering::Relaxed) {
-                        match Command::new("npm")
-                            .args(["run", "build-server"])
-                            .env("OUT_DIR", env!("OUT_DIR"))
-                            .status()
-                        {
-                            Ok(status) => {
-                                if !status.success() {
-                                    println!("Asset build failed!");
-                                }
+                    match Command::new("npm")
+                        .args(["run", "build-server"])
+                        .env("OUT_DIR", env!("OUT_DIR"))
+                        .spawn()
+                    {
+                        Ok(mut child) => {
+                            while !asset_build_thread_terminate_clone.load(Ordering::Relaxed) {
+                                use std::{thread::sleep, time::Duration};
+
+                                sleep(Duration::from_millis(200));
                             }
-                            Err(error) => {
-                                println!("Failed to execute asset build command: {}", error);
-                            }
+                            let _ = child.kill();
                         }
-                    }
+                        Err(error) => println!("Failed to execute asset build command: {}", error),
+                    };
                 })),
                 asset_build_thread_terminate,
             })

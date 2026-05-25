@@ -651,8 +651,6 @@ impl Battle {
 
 #[cfg(test)]
 mod tests {
-    use futures::executor::block_on;
-
     use crate::{Battle, BoardItem, CardId, CardInstance, CardInstanceId, DefaultRandomProvider};
 
     #[tokio::test]
@@ -781,7 +779,7 @@ mod tests {
         );
         assert_eq!(battle.board.grid.get(2, 1), Some(&BoardItem::Inert));
 
-        block_on(battle.run_to_completion()).unwrap();
+        battle.run_to_completion().await.unwrap();
         Ok(())
     }
 }
