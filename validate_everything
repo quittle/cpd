@@ -9,7 +9,7 @@ nvm use
 
 npm ci
 
-cargo fmt --all
+cargo fmt --all --check
 cargo build --all
 cargo run --bin codegen
 cargo test --all

@@ -1,10 +1,13 @@
-use std::path::PathBuf;
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use crate::{
-    Actor, Battle, Board, BoardItem, CardId, CardInstance, CardInstanceId, Character, CharacterId,
-    CharacterRace, DumbActor, EffectId, EndCondition, EndConditionCriterion, Health, NumericExt,
-    ObjectId, ObjectInstance, ObjectInstanceId, RandomProvider, Team, TeamId, TerminalActor,
-    U64Range, battle_file, web_actor::WebActor,
+    Actor, Battle, Board, BoardItem, Card, CardId, CardInstance, CardInstanceId, Character,
+    CharacterId, CharacterRace, DumbActor, Effect, EffectId, EndCondition, EndConditionCriterion,
+    Health, NumericExt, Object, ObjectId, ObjectInstance, ObjectInstanceId, RandomProvider, Team,
+    TeamId, TerminalActor, U64Range, battle_file, web_actor::WebActor,
 };
 use futures::future::join_all;
 
@@ -157,231 +160,43 @@ impl Battle {
         validate_ids(&battle.effects, |entry| entry.id)?;
         validate_ids(&battle.objects, |entry| entry.id)?;
 
-        let mut end_conditions = validate_and_get_additional_end_conditions(&battle)?;
-        end_conditions.extend(battle.end_conditions.clone());
-
-        let mut board = Board::new(battle.board.width, battle.board.height);
-
         let mut current_card_instance_id = 0usize;
         let mut current_object_instance_id = 0usize;
 
-        for cell in battle.board.cells.as_ref().into_iter().flatten() {
-            match cell {
-                battle_file::Cell::Card { card, location } => {
-                    for (x, y) in location.iter() {
-                        if !board.grid.is_valid(x, y) {
-                            return Err(format!("Invalid card position: {x}, {y}"));
-                        }
-                        board.grid.set(
-                            x,
-                            y,
-                            BoardItem::Card(CardInstance {
-                                card_id: CardId::new(*card),
-                                card_instance_id: CardInstanceId::new(
-                                    current_card_instance_id.inc(),
-                                ),
-                            }),
-                        );
-                    }
-                }
-                battle_file::Cell::Inert { location, .. } => {
-                    for (x, y) in location.iter() {
-                        if !board.grid.is_valid(x, y) {
-                            return Err(format!("Invalid inert position: {x}, {y}"));
-                        }
-                        board.grid.set(x, y, BoardItem::Inert);
-                    }
-                }
-            }
-        }
-
-        let team_character_ids = get_all_team_character_ids(&battle);
-
-        for (_team_id, character_id, team_member) in &team_character_ids {
-            let (x, y) = team_member.location;
-            if !board.grid.is_valid(x, y) {
-                return Err(format!("Invalid team member position: {x}, {y}"));
-            }
-            if let Some(_prev_id) =
-                board
-                    .grid
-                    .set(x, y, BoardItem::Character(CharacterId::new(*character_id)))
-            {
-                return Err(format!("Multiple entries found at {x}, {y}"));
-            }
-
-            for item in &team_member.contains {
-                match item {
-                    battle_file::Content::Card(id) => {
-                        if battle.cards.len() <= *id {
-                            return Err(format!("Invalid card id {id} for {}", team_member.name));
-                        }
-                    }
-                    battle_file::Content::Object(id) => {
-                        if battle.objects.len() <= *id {
-                            return Err(format!("Invalid object id {id} for {}", team_member.name));
-                        }
-                    }
-                }
-            }
-        }
-
         let canonical_asset_directory =
             asset_directory.map(|path_buf| path_buf.canonicalize().unwrap());
-        let asset_directory = canonical_asset_directory.as_deref();
-        let deserialized_battle = Battle {
+
+        Ok(Battle {
             history: vec![],
             introduction: battle.introduction.clone(),
             random_provider,
             default_turn_actions: 1,
-            background_image: battle
-                .board
-                .background
-                .as_ref()
-                .and_then(|background| background.image.clone()),
-            characters: battle
-                .teams
-                .iter()
-                .flat_map(|team| &team.members)
-                .enumerate()
-                .map(|(index, member)| {
-                    (
-                        CharacterId::new(index),
-                        Character {
-                            id: CharacterId::new(index),
-                            name: member.name.clone(),
-                            effects: member
-                                .effects
-                                .iter()
-                                .map(|effect| EffectId::new(*effect))
-                                .collect(),
-                            race: match member.race {
-                                battle_file::Race::Human => CharacterRace::Human,
-                                battle_file::Race::Machine => CharacterRace::Machine,
-                            },
-                            hand: vec![],
-                            remaining_actions: 0,
-                            image: member.image.clone(),
-                            deck: member
-                                .cards
-                                .iter()
-                                .map(|card_id| CardInstance {
-                                    card_id: CardId::new(*card_id),
-                                    card_instance_id: CardInstanceId::new(
-                                        current_card_instance_id.inc(),
-                                    ),
-                                })
-                                .collect(),
-                            discard: vec![],
-                            health: Health::new(member.base_health),
-                            max_health: Health::new(
-                                member.max_health.unwrap_or(member.base_health),
-                            ),
-                            hand_size: member.hand_size.unwrap_or(battle.default_hand_size),
-                            movement: 0,
-                            default_movement: member
-                                .movement
-                                .unwrap_or(battle.default_movement.unwrap_or(0)),
-                            contains: member
-                                .contains
-                                .iter()
-                                .map(|content| match content {
-                                    battle_file::Content::Card(id) => {
-                                        crate::Content::Card(CardInstance::new(
-                                            CardId::new(*id),
-                                            CardInstanceId::new(current_card_instance_id.inc()),
-                                        ))
-                                    }
-                                    battle_file::Content::Object(id) => {
-                                        crate::Content::Object(ObjectInstance::new(
-                                            ObjectId::new(*id),
-                                            ObjectInstanceId::new(current_object_instance_id.inc()),
-                                        ))
-                                    }
-                                })
-                                .collect(),
-                        },
-                    )
-                })
-                .collect(),
-            cards: battle
-                .cards
-                .iter()
-                .map(|card| (CardId::new(card.id), deserialize_card(card)))
-                .collect(),
-            effects: battle
-                .effects
-                .iter()
-                .enumerate()
-                .map(|(index, effect)| (EffectId::new(index), deserialize_effect(effect)))
-                .collect(),
-            objects: battle
-                .objects
-                .iter()
-                .enumerate()
-                .map(|(index, object)| (ObjectId::new(index), deserialize_object(object)))
-                .collect(),
-            teams: battle
-                .teams
-                .iter()
-                .enumerate()
-                .map(|(index, team)| Team {
-                    id: TeamId::new(index.try_into().unwrap()),
-                    name: team.name.clone(),
-                })
-                .collect(),
-            actors: join_all(team_character_ids.iter().map(
-                move |(team_id, character_id, team_member)| {
-                    let is_player = team_member.is_player;
-                    async move {
-                        let character_id = CharacterId::new(*character_id);
-                        (
-                            TeamId::new((*team_id).try_into().unwrap()),
-                            if is_player {
-                                if cfg!(feature = "terminal_ui") {
-                                    Box::new(TerminalActor { character_id }) as Box<dyn Actor>
-                                } else {
-                                    Box::new(
-                                        WebActor::new(character_id, asset_directory).await.unwrap(),
-                                    ) as Box<dyn Actor>
-                                }
-                            } else {
-                                Box::new(DumbActor { character_id }) as Box<dyn Actor>
-                            },
-                        )
-                    }
-                },
-            ))
-            .await,
+            background_image: deserialize_background_image(&battle),
+            board: deserialize_board(&battle, &mut current_card_instance_id)?,
+            characters: deserialize_characters(
+                &battle,
+                &mut current_card_instance_id,
+                &mut current_object_instance_id,
+            ),
+            cards: deserialize_cards(&battle),
+            effects: deserialize_effects(&battle),
+            objects: deserialize_objects(&battle),
+            teams: deserialize_teams(&battle),
+            actors: deserialize_actors(&battle, canonical_asset_directory.as_deref()).await,
             round: 0,
-            board,
-            asset_directory: canonical_asset_directory.clone(),
-            end_conditions: end_conditions
-                .iter()
-                .map(|condition| EndCondition {
-                    title: condition.title.clone(),
-                    description: condition.description.clone(),
-                    condition_type: condition.condition_type,
-                    condition: match &condition.condition {
-                        battle_file::EndConditionCriterion::TeamMemberDeath { ids } => {
-                            EndConditionCriterion::TeamMemberDeath {
-                                ids: ids.iter().map(|id| CharacterId::new(*id)).collect(),
-                            }
-                        }
-                        battle_file::EndConditionCriterion::ObjectOwned {
-                            character_id,
-                            object_id,
-                        } => EndConditionCriterion::ObjectOwned {
-                            character_id: CharacterId::new(*character_id),
-                            object_id: ObjectId::new(*object_id),
-                        },
-                    },
-                })
-                .collect(),
+            asset_directory: canonical_asset_directory,
+            end_conditions: deserialize_end_conditions(&battle)?,
             end_state: None,
-        };
-        Ok(deserialized_battle)
+        })
     }
+}
+
+fn deserialize_background_image(battle: &battle_file::Battle) -> Option<String> {
+    battle
+        .board
+        .background
+        .as_ref()
+        .and_then(|background| background.image.clone())
 }
 
 fn deserialize_card_action(card_action: &battle_file::CardAction) -> crate::CardAction {
@@ -506,6 +321,234 @@ fn deserailize_trigger(trigger: &battle_file::Trigger) -> crate::Trigger {
         battle_file::Trigger::Death => crate::Trigger::Death,
         battle_file::Trigger::TurnStart => crate::Trigger::TurnStart,
     }
+}
+
+fn deserialize_characters(
+    battle: &battle_file::Battle,
+    current_card_instance_id: &mut usize,
+    current_object_instance_id: &mut usize,
+) -> HashMap<CharacterId, Character> {
+    battle
+        .teams
+        .iter()
+        .flat_map(|team| &team.members)
+        .enumerate()
+        .map(|(index, member)| {
+            (
+                CharacterId::new(index),
+                Character {
+                    id: CharacterId::new(index),
+                    name: member.name.clone(),
+                    effects: member
+                        .effects
+                        .iter()
+                        .map(|effect| EffectId::new(*effect))
+                        .collect(),
+                    race: match member.race {
+                        battle_file::Race::Human => CharacterRace::Human,
+                        battle_file::Race::Machine => CharacterRace::Machine,
+                    },
+                    hand: vec![],
+                    remaining_actions: 0,
+                    image: member.image.clone(),
+                    deck: member
+                        .cards
+                        .iter()
+                        .map(|card_id| CardInstance {
+                            card_id: CardId::new(*card_id),
+                            card_instance_id: CardInstanceId::new(current_card_instance_id.inc()),
+                        })
+                        .collect(),
+                    discard: vec![],
+                    health: Health::new(member.base_health),
+                    max_health: Health::new(member.max_health.unwrap_or(member.base_health)),
+                    hand_size: member.hand_size.unwrap_or(battle.default_hand_size),
+                    movement: 0,
+                    default_movement: member
+                        .movement
+                        .unwrap_or(battle.default_movement.unwrap_or(0)),
+                    contains: member
+                        .contains
+                        .iter()
+                        .map(|content| match content {
+                            battle_file::Content::Card(id) => {
+                                crate::Content::Card(CardInstance::new(
+                                    CardId::new(*id),
+                                    CardInstanceId::new(current_card_instance_id.inc()),
+                                ))
+                            }
+                            battle_file::Content::Object(id) => {
+                                crate::Content::Object(ObjectInstance::new(
+                                    ObjectId::new(*id),
+                                    ObjectInstanceId::new(current_object_instance_id.inc()),
+                                ))
+                            }
+                        })
+                        .collect(),
+                },
+            )
+        })
+        .collect()
+}
+
+fn deserialize_cards(battle: &battle_file::Battle) -> HashMap<CardId, Card> {
+    battle
+        .cards
+        .iter()
+        .map(|card| (CardId::new(card.id), deserialize_card(card)))
+        .collect()
+}
+
+fn deserialize_effects(battle: &battle_file::Battle) -> HashMap<EffectId, Effect> {
+    battle
+        .effects
+        .iter()
+        .enumerate()
+        .map(|(index, effect)| (EffectId::new(index), deserialize_effect(effect)))
+        .collect()
+}
+
+fn deserialize_objects(battle: &battle_file::Battle) -> HashMap<ObjectId, Object> {
+    battle
+        .objects
+        .iter()
+        .enumerate()
+        .map(|(index, object)| (ObjectId::new(index), deserialize_object(object)))
+        .collect()
+}
+
+fn deserialize_teams(battle: &battle_file::Battle) -> Vec<Team> {
+    battle
+        .teams
+        .iter()
+        .enumerate()
+        .map(|(index, team)| Team {
+            id: TeamId::new(index.try_into().unwrap()),
+            name: team.name.clone(),
+        })
+        .collect()
+}
+
+fn deserialize_board(
+    battle: &battle_file::Battle,
+    current_card_instance_id: &mut usize,
+) -> Result<Board, String> {
+    let mut board = Board::new(battle.board.width, battle.board.height);
+
+    for cell in battle.board.cells.as_ref().into_iter().flatten() {
+        match cell {
+            battle_file::Cell::Card { card, location } => {
+                for (x, y) in location.iter() {
+                    if !board.grid.is_valid(x, y) {
+                        return Err(format!("Invalid card position: {x}, {y}"));
+                    }
+                    board.grid.set(
+                        x,
+                        y,
+                        BoardItem::Card(CardInstance {
+                            card_id: CardId::new(*card),
+                            card_instance_id: CardInstanceId::new(current_card_instance_id.inc()),
+                        }),
+                    );
+                }
+            }
+            battle_file::Cell::Inert { location, .. } => {
+                for (x, y) in location.iter() {
+                    if !board.grid.is_valid(x, y) {
+                        return Err(format!("Invalid inert position: {x}, {y}"));
+                    }
+                    board.grid.set(x, y, BoardItem::Inert);
+                }
+            }
+        }
+    }
+
+    for (_team_id, character_id, team_member) in get_all_team_character_ids(battle) {
+        let (x, y) = team_member.location;
+        if !board.grid.is_valid(x, y) {
+            return Err(format!("Invalid team member position: {x}, {y}"));
+        }
+        if let Some(_prev_id) =
+            board
+                .grid
+                .set(x, y, BoardItem::Character(CharacterId::new(character_id)))
+        {
+            return Err(format!("Multiple entries found at {x}, {y}"));
+        }
+
+        for item in &team_member.contains {
+            match item {
+                battle_file::Content::Card(id) => {
+                    if battle.cards.len() <= *id {
+                        return Err(format!("Invalid card id {id} for {}", team_member.name));
+                    }
+                }
+                battle_file::Content::Object(id) => {
+                    if battle.objects.len() <= *id {
+                        return Err(format!("Invalid object id {id} for {}", team_member.name));
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(board)
+}
+
+async fn deserialize_actors(
+    battle: &battle_file::Battle,
+    asset_directory: Option<&Path>,
+) -> Vec<(TeamId, Box<dyn Actor>)> {
+    join_all(get_all_team_character_ids(battle).iter().map(
+        move |(team_id, character_id, team_member)| {
+            let is_player = team_member.is_player;
+            async move {
+                let character_id = CharacterId::new(*character_id);
+                (
+                    TeamId::new((*team_id).try_into().unwrap()),
+                    if is_player {
+                        if cfg!(feature = "terminal_ui") {
+                            Box::new(TerminalActor { character_id }) as Box<dyn Actor>
+                        } else {
+                            Box::new(WebActor::new(character_id, asset_directory).await.unwrap())
+                                as Box<dyn Actor>
+                        }
+                    } else {
+                        Box::new(DumbActor { character_id }) as Box<dyn Actor>
+                    },
+                )
+            }
+        },
+    ))
+    .await
+}
+
+fn deserialize_end_conditions(battle: &battle_file::Battle) -> Result<Vec<EndCondition>, String> {
+    let mut end_conditions = validate_and_get_additional_end_conditions(battle)?;
+    end_conditions.extend(battle.end_conditions.clone());
+
+    Ok(end_conditions
+        .iter()
+        .map(|condition| EndCondition {
+            title: condition.title.clone(),
+            description: condition.description.clone(),
+            condition_type: condition.condition_type,
+            condition: match &condition.condition {
+                battle_file::EndConditionCriterion::TeamMemberDeath { ids } => {
+                    EndConditionCriterion::TeamMemberDeath {
+                        ids: ids.iter().map(|id| CharacterId::new(*id)).collect(),
+                    }
+                }
+                battle_file::EndConditionCriterion::ObjectOwned {
+                    character_id,
+                    object_id,
+                } => EndConditionCriterion::ObjectOwned {
+                    character_id: CharacterId::new(*character_id),
+                    object_id: ObjectId::new(*object_id),
+                },
+            },
+        })
+        .collect())
 }
 
 #[cfg(test)]
