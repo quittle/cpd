@@ -21,7 +21,7 @@ pub struct BattleState<'battle> {
 }
 pub struct WebActor {
     character_id: CharacterId,
-    #[allow(dead_code)] // Required to stay alive during lifetime of WebActor
+    #[expect(dead_code)] // Required to stay alive during lifetime of WebActor
     server: Server<ServerState>,
     event_tx: ArcEventSender,
     action_rx: Arc<Mutex<Receiver<BattleServerEvent>>>,

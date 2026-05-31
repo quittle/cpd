@@ -3,6 +3,8 @@ use std::fmt::Display;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::map_serde_error;
+
 pub type LifeNumber = u64;
 pub type CardId = usize;
 pub type EffectId = usize;
@@ -56,11 +58,6 @@ pub enum EndConditionCriterion {
         character_id: usize,
         object_id: ObjectId,
     },
-}
-
-fn map_serde_error(source: &str, err: serde_json::Error) -> String {
-    let line = source.lines().nth(err.line() - 1).unwrap_or("");
-    err.to_string() + "\\n" + line
 }
 
 impl Battle {
