@@ -27,11 +27,11 @@ export default function App() {
       const newBattleState = JSON.parse(e.data) as BattleState;
       setBattleState(newBattleState);
 
-      const { round } = newBattleState.battle;
+      const { round, history } = newBattleState.battle;
       if (round === undefined) {
         setShowIntroState(false);
       } else {
-        setShowIntroState(round <= 1);
+        setShowIntroState(round <= 1 && history.length <= 1);
       }
     };
 
