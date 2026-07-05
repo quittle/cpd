@@ -2,9 +2,15 @@
   "compilerOptions": {
     "jsx": "react",
     "target": "esnext",
-    "lib": ["dom", "es2023"],
+    "lib": [
+      "dom",
+      "es2023"
+    ],
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
-    "types": ["vite/client"]
+    "types": [
+      "vite/client"
+    ],
+    "strict": false,
   }
 }

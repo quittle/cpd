@@ -24,6 +24,10 @@
       },
       {
         "inert": true,
+        "location": [2, 2]
+      },
+      {
+        "inert": true,
         "location": [0, 5]
       },
       {

@@ -1,12 +1,12 @@
 import type { BattleState, CardInstance, Character } from "./battle";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { assetUrl, getPlayerCoordinate, isAdjacent } from "./utils";
 import {
   isBoardItemCard,
   isBoardItemCharacter,
   isBoardItemInert,
 } from "./battle";
-import { move, takeAction, takeContent } from "./state";
+import { move, takeAction } from "./state";
 
 import type { Coordinate } from "./utils";
 import { isCardEligible } from "./Card";
@@ -16,9 +16,18 @@ export function GameBoard(props: {
   readonly draggedCard: CardInstance | undefined;
 }) {
   const { battle } = props.battleState;
-  const [selectedSquare, setSelectedSquare] = useState<Coordinate>();
-
   const playerCoordinate = getPlayerCoordinate(props.battleState);
+  const [selectedSquare, setSelectedSquare] = useState<Coordinate | null>(playerCoordinate);
+  const [isPendingAction, setIsPendingAction] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isPendingAction) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect: This shouldn't trigger recursive changes
+      setSelectedSquare(playerCoordinate);
+      setIsPendingAction(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps: Intentionally non-exhaustive to only trigger when battle changes
+  }, [battle])
 
   const backgroundImage = battle.background_image
     ? assetUrl(battle.background_image)
@@ -33,12 +42,12 @@ export function GameBoard(props: {
             {row.map((cell, x) => {
               let image: string | undefined;
               let character: Character | undefined;
-              let isPlayer: boolean;
+              let isPlayer = false;
               let isInert = false;
               let isClickable: boolean;
               if (isBoardItemCharacter(cell)) {
                 character = battle.characters[cell.id];
-                if (character.image !== null) {
+                if (character.image) {
                   image = assetUrl(character.image);
                 }
                 if (character.health === 0) {
@@ -48,10 +57,8 @@ export function GameBoard(props: {
                 isClickable = !isPlayer;
               } else if (isBoardItemCard(cell)) {
                 image = assetUrl("card.png");
-                isPlayer = false;
                 isClickable = true;
               } else if (isBoardItemInert(cell)) {
-                isPlayer = false;
                 isInert = true;
                 isClickable = false;
               }
@@ -69,35 +76,22 @@ export function GameBoard(props: {
                 <td
                   key={x} // eslint-disable-line react/no-array-index-key
                   onClick={async () => {
-                    if (isPlayer) {
-                      if (isSelectedSquare) {
-                        setSelectedSquare(undefined);
-                      } else {
-                        setSelectedSquare(curLocation);
-                      }
+                    if (isSelectedSquare) {
+                      console.log("Clearning");
+                      setSelectedSquare(undefined);
+                      setIsPendingAction(false);
+                    } else if (isPlayer) {
+                      setSelectedSquare(curLocation);
                     } else if (
-                      isAdjacent(selectedSquare, curLocation) &&
-                      selectedSquare !== undefined
+                      isAdjacent(selectedSquare, curLocation)
                     ) {
                       const item =
                         battle.board.grid.members[selectedSquare.y][
-                          selectedSquare.x
+                        selectedSquare.x
                         ];
                       if (isBoardItemCharacter(item)) {
-                        setSelectedSquare(undefined);
+                        setIsPendingAction(true);
                         await move(item.id, curLocation);
-                      }
-                    } else if (isAdjacent(curLocation, playerCoordinate)) {
-                      if (isBoardItemCard(cell)) {
-                        await takeContent(
-                          props.battleState.character_id,
-                          curLocation,
-                          {
-                            card: cell.id,
-                          },
-                        );
-                      } else if (isBoardItemCharacter(cell)) {
-                        console.log("Trying to take content from", cell.id);
                       }
                     }
                   }}
@@ -122,6 +116,7 @@ export function GameBoard(props: {
                   style={{
                     border: isInert ? 0 : undefined,
                     borderColor: isSelectedSquare ? "red" : "black",
+                    borderStyle: isSelectedSquare && isPendingAction ? "dashed" : "solid",
                     backgroundImage: image,
                     opacity: isIneligible ? 0.5 : 1,
                     cursor: isClickable ? "pointer" : "default",
