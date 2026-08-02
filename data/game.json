@@ -1,0 +1,15 @@
+{
+  "name": "Test Game",
+  "description": "First go at stringing battles together",
+  "battles": [
+    {
+      "id": 0,
+      "data": "intro.json",
+      "win": 1
+    },
+    {
+      "id": 1,
+      "data": "mines.json"
+    }
+  ]
+}
