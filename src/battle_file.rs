@@ -95,7 +95,7 @@ impl Battle {
             for team_member in &team.members {
                 if team_member.is_player {
                     if player_found {
-                        return Err("Multiple playable team members found.")?;
+                        Err("Multiple playable team members found.")?;
                     }
                     player_found = true;
                 }
