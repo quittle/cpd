@@ -28,5 +28,5 @@ pub struct Object {
     pub id: ObjectId,
     pub name: String,
     pub description: String,
-    pub image: Option<String>,
+    pub image: String,
 }

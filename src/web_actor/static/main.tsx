@@ -5,7 +5,12 @@ import { ErrorBoundary } from "react-error-boundary";
 import ErrorBoundaryFallback from "./ErrorBoundaryFallback";
 import ReactDOM from "react-dom/client";
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+const root = document.getElementById("root");
+if (root === null) {
+  throw new Error("Root element not found");
+}
+
+ReactDOM.createRoot(root).render(
   <StrictMode>
     <ErrorBoundary FallbackComponent={ErrorBoundaryFallback}>
       <App />

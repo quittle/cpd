@@ -134,7 +134,7 @@ export interface components {
             hand_size: number;
             health: components["schemas"]["Health"];
             id: components["schemas"]["CharacterId"];
-            image?: string | null;
+            image: string;
             max_health: components["schemas"]["Health"];
             /** Format: uint64 */
             movement: number;
@@ -156,7 +156,7 @@ export interface components {
             actions: components["schemas"]["CardAction"][];
             description: string;
             id: components["schemas"]["EffectId"];
-            image?: string | null;
+            image: string;
             name: string;
             triggers: components["schemas"]["Trigger"][];
         };
@@ -192,7 +192,7 @@ export interface components {
         Object: {
             description: string;
             id: components["schemas"]["ObjectId"];
-            image?: string | null;
+            image: string;
             name: string;
         };
         /** Format: uint */

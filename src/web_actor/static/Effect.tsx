@@ -11,13 +11,13 @@ export default function Effect(props: {
 }) {
   const { effect, count } = props;
 
-  const [effectElement, setEffectElement] = useState<HTMLElement>();
+  const [effectElement, setEffectElement] = useState<HTMLElement | null>(null);
 
   return (
     <Badge count={count} key={effect.id} showCountBelowTwo={false}>
       <span
         className="effect"
-        ref={setEffectElement}
+        ref={(e) => setEffectElement(e)}
         style={{
           backgroundImage: assetUrl(effect.image),
         }}

@@ -17,17 +17,19 @@ export function GameBoard(props: {
 }) {
   const { battle } = props.battleState;
   const playerCoordinate = getPlayerCoordinate(props.battleState);
-  const [selectedSquare, setSelectedSquare] = useState<Coordinate | null>(playerCoordinate);
+  const [selectedSquare, setSelectedSquare] = useState<Coordinate | null>(
+    playerCoordinate,
+  );
   const [isPendingAction, setIsPendingAction] = useState<boolean>(false);
 
   useEffect(() => {
     if (isPendingAction) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect: This shouldn't trigger recursive changes
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- This shouldn't trigger recursive changes
       setSelectedSquare(playerCoordinate);
       setIsPendingAction(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps: Intentionally non-exhaustive to only trigger when battle changes
-  }, [battle])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally non-exhaustive to only trigger when battle changes
+  }, [battle]);
 
   const backgroundImage = battle.background_image
     ? assetUrl(battle.background_image)
@@ -44,7 +46,7 @@ export function GameBoard(props: {
               let character: Character | undefined;
               let isPlayer = false;
               let isInert = false;
-              let isClickable: boolean;
+              let isClickable = false;
               if (isBoardItemCharacter(cell)) {
                 character = battle.characters[cell.id];
                 if (character.image) {
@@ -60,7 +62,6 @@ export function GameBoard(props: {
                 isClickable = true;
               } else if (isBoardItemInert(cell)) {
                 isInert = true;
-                isClickable = false;
               }
               const curLocation: Coordinate = { x, y };
               const isSelectedSquare =
@@ -78,16 +79,17 @@ export function GameBoard(props: {
                   onClick={async () => {
                     if (isSelectedSquare) {
                       console.log("Clearning");
-                      setSelectedSquare(undefined);
+                      setSelectedSquare(null);
                       setIsPendingAction(false);
                     } else if (isPlayer) {
                       setSelectedSquare(curLocation);
                     } else if (
-                      isAdjacent(selectedSquare, curLocation)
+                      isAdjacent(selectedSquare, curLocation) &&
+                      selectedSquare !== null
                     ) {
                       const item =
                         battle.board.grid.members[selectedSquare.y][
-                        selectedSquare.x
+                          selectedSquare.x
                         ];
                       if (isBoardItemCharacter(item)) {
                         setIsPendingAction(true);
@@ -116,7 +118,8 @@ export function GameBoard(props: {
                   style={{
                     border: isInert ? 0 : undefined,
                     borderColor: isSelectedSquare ? "red" : "black",
-                    borderStyle: isSelectedSquare && isPendingAction ? "dashed" : "solid",
+                    borderStyle:
+                      isSelectedSquare && isPendingAction ? "dashed" : "solid",
                     backgroundImage: image,
                     opacity: isIneligible ? 0.5 : 1,
                     cursor: isClickable ? "pointer" : "default",

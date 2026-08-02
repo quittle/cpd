@@ -196,7 +196,7 @@ fn deserialize_background_image(battle: &battle_file::Battle) -> Option<String> 
         .board
         .background
         .as_ref()
-        .and_then(|background| background.image.clone())
+        .map(|background| background.image.clone())
 }
 
 fn deserialize_card_action(card_action: &battle_file::CardAction) -> crate::CardAction {

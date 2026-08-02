@@ -182,7 +182,7 @@ pub enum Cell {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct BoardBackground {
-    pub image: Option<String>,
+    pub image: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -222,7 +222,7 @@ pub struct TeamMember {
     pub hand_size: Option<HandSize>,
     #[serde(default)]
     pub is_player: bool,
-    pub image: Option<String>,
+    pub image: String,
     pub location: (usize, usize),
     pub movement: Option<u64>,
 }
@@ -258,7 +258,7 @@ pub struct Effect {
     pub id: EffectId,
     pub name: String,
     pub description: String,
-    pub image: Option<String>,
+    pub image: String,
     pub triggers: Option<Vec<Trigger>>,
     pub actions: Vec<CardAction>,
 }
@@ -336,7 +336,7 @@ pub struct Object {
     pub name: String,
     pub description: String,
     pub flavor: Option<String>,
-    pub image: Option<String>,
+    pub image: String,
 }
 
 #[cfg(test)]
@@ -373,8 +373,9 @@ mod tests {
                 {
                     "id": 0,
                     "name": "effect name",
-                    "description": "effec description",
+                    "description": "effect description",
                     "triggers": ["death"],
+                    "image": "effect.png",
                     "actions": [
                         {
                             "type": "damage",
@@ -413,7 +414,8 @@ mod tests {
                             "cards": [0],
                             "effects": [0],
                             "location": [0, 0],
-                            "is_player": true
+                            "is_player": true,
+                            "image": "player.png"
                         }
                     ]
                 }
@@ -451,7 +453,8 @@ mod tests {
                             "race": "Human",
                             "base_health": 10,
                             "cards": [],
-                            "location": [0, 0]
+                            "location": [0, 0],
+                            "image": "member.png"
                         },
                         {
                             "name": "Member 2",
@@ -459,7 +462,8 @@ mod tests {
                             "race": "Human",
                             "base_health": 10,
                             "cards": [],
-                            "location": [0, 0]
+                            "location": [0, 0],
+                            "image": "member.png"
                         }
                     ]
                 }
@@ -487,7 +491,8 @@ mod tests {
                 {
                     "id": 0,
                     "name": "Key",
-                    "description": "A key"
+                    "description": "A key",
+                    "image": "key.png"
                 }
             ],
             "end_conditions": [
@@ -512,7 +517,8 @@ mod tests {
                             "race": "Human",
                             "base_health": 10,
                             "cards": [],
-                            "location": [0, 0]
+                            "location": [0, 0],
+                            "image": "player.png"
                         }
                     ]
                 }
@@ -564,7 +570,8 @@ mod tests {
                             "race": "Human",
                             "base_health": 10,
                             "cards": [],
-                            "location": [0, 0]
+                            "location": [0, 0],
+                            "image": "player.png"
                         }
                     ]
                 },
@@ -576,14 +583,16 @@ mod tests {
                             "race": "Human",
                             "base_health": 10,
                             "cards": [],
-                            "location": [0, 0]
+                            "location": [0, 0],
+                            "image": "enemy.png"
                         },
                         {
                             "name": "Enemy 2",
                             "race": "Human",
                             "base_health": 10,
                             "cards": [],
-                            "location": [0, 0]
+                            "location": [0, 0],
+                            "image": "enemy.png"
                         }
                     ]
                 }
@@ -639,7 +648,8 @@ mod tests {
                             "race": "Human",
                             "base_health": 10,
                             "cards": [],
-                            "location": [0, 0]
+                            "location": [0, 0],
+                            "image": "player.png"
                         }
                     ]
                 }
@@ -669,7 +679,8 @@ mod tests {
                 {
                     "id": 0,
                     "name": "Treasure",
-                    "description": "Gold"
+                    "description": "Gold",
+                    "image": "treasure.png"
                 }
             ],
             "end_conditions": [
@@ -703,7 +714,8 @@ mod tests {
                             "race": "Human",
                             "base_health": 10,
                             "cards": [],
-                            "location": [0, 0]
+                            "location": [0, 0],
+                            "image": "player.png"
                         }
                     ]
                 }
@@ -736,6 +748,7 @@ mod tests {
                             "is_player": true,
                             "race": "Human",
                             "base_health": 10,
+                            "image": "player.png",
                             "cards": [],
                             "location": [0, 0]
                         }

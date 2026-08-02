@@ -77,7 +77,7 @@ macro_rules! markup {
 
     // Handle all other entries
     (($temp_vec:ident:$type_id:ident): [$expr:expr$(, $($rest:tt)*)?]) => {
-        #[expect(clippy::vec_init_then_push)]
+        #[allow(clippy::vec_init_then_push)] // Not "expect" because it doesn't always apply somehow
         {
             // Append the entries
             $temp_vec.push(($expr).into());

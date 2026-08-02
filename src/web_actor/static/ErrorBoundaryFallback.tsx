@@ -17,9 +17,7 @@ export default function ErrorBoundaryFallback({
         </pre>
       ) : (
         <pre style={{ color: "red" }}>
-          Error: [{typeof error}]
-          {/* eslint-disable-next-line @typescript-eslint/no-base-to-string */}
-          {String(error)}
+          Error: [{typeof error}]{String(error)}
         </pre>
       )}
 

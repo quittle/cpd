@@ -711,14 +711,16 @@ mod tests {
                             "base_health": 5,
                             "cards": [0],
                             "hand_size": 1,
-                            "location": [0, 0]
+                            "location": [0, 0],
+                            "image": "member.png"
                         },
                         {
                             "name": "Member A2",
                             "race": "Human",
                             "base_health": 5,
                             "cards": [1],
-                            "location": [0, 1]
+                            "location": [0, 1],
+                            "image": "member.png"
                         }
                     ]
                 },
@@ -731,7 +733,8 @@ mod tests {
                             "base_health": 15,
                             "cards": [0],
                             "location": [1, 0],
-                            "is_player": true
+                            "is_player": true,
+                            "image": "member.png"
                         }
                     ]
                 }

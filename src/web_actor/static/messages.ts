@@ -12,14 +12,14 @@ export function init(onConnected?: () => void) {
 
 export function addEventListener(
   event: string,
-  callback: (MessageEvent) => void,
+  callback: (e: MessageEvent) => void,
 ) {
   evtSource.addEventListener(event, callback);
 }
 
 export function removeEventListener(
   event: string,
-  callback: (MessageEvent) => void,
+  callback: (e: MessageEvent) => void,
 ) {
   evtSource.removeEventListener(event, callback);
 }

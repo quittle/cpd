@@ -23,7 +23,7 @@ export default function App() {
     // Throwaway
     void fetch("/info");
 
-    const onBattleState: (MessageEvent) => void = (e: MessageEvent<string>) => {
+    const onBattleState = (e: MessageEvent<string>) => {
       const newBattleState = JSON.parse(e.data) as BattleState;
       setBattleState(newBattleState);
 

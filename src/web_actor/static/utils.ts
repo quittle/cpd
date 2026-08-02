@@ -87,8 +87,11 @@ export interface Coordinate {
   y: number;
 }
 
-export function isAdjacent(a?: Coordinate, b?: Coordinate): boolean {
-  if (a === undefined || b === undefined) {
+export function isAdjacent(
+  a: Coordinate | null,
+  b: Coordinate | null,
+): boolean {
+  if (a === null || b === null) {
     return false;
   }
   return (
@@ -119,7 +122,7 @@ export function getCharacterCoordinate(
     }
   }
 
-  return null;
+  throw new Error(`Unable to find character ${characterId} in the battle`);
 }
 
 export function getPlayerCoordinate(

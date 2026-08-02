@@ -14,7 +14,7 @@ export default function Tooltip(props: TooltipProps) {
   const anchorName = `--${useId()}`;
 
   useLayoutEffect(() => {
-    anchorRef.current.style["anchorName"] = anchorName; // eslint-disable-line dot-notation
+    anchorRef.current.style.setProperty("anchorName", anchorName);
   }, [anchor, anchorName]);
 
   return (
