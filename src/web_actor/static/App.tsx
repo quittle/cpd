@@ -21,7 +21,8 @@ export default function App() {
 
   useEffect(() => {
     // Throwaway
-    void fetch("/info");
+    const controller = new AbortController();
+    void fetch("/info", { signal: controller.signal });
 
     const onBattleState = (e: MessageEvent<string>) => {
       const newBattleState = JSON.parse(e.data) as BattleState;
@@ -37,6 +38,7 @@ export default function App() {
 
     messages.addEventListener("battle_state", onBattleState);
     return () => {
+      controller.abort();
       messages.removeEventListener("battle_state", onBattleState);
     };
   }, [setBattleState]);

@@ -39,7 +39,7 @@ export default function BattleHistory(props: {
       {props.history
         .map((entry, index) => (
           <li
-            key={index} // eslint-disable-line react/no-array-index-key
+            key={index} // eslint-disable-line @eslint-react/no-array-index-key
           >
             {...entry.map(convert)}
           </li>

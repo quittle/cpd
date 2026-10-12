@@ -1,4 +1,4 @@
-import "react"; // eslint-disable-line react/no-typos
+import "react";
 
 declare module "react" {
   interface CSSProperties {
