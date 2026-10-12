@@ -11,6 +11,7 @@ export default function Tooltip(props: TooltipProps) {
 
   const anchorRef = useRef(anchor);
 
+  // eslint-disable-next-line @eslint-react/naming-convention-id-name
   const anchorName = `--${useId()}`;
 
   useLayoutEffect(() => {

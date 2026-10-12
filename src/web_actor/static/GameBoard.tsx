@@ -24,11 +24,12 @@ export function GameBoard(props: {
 
   useEffect(() => {
     if (isPendingAction) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- This shouldn't trigger recursive changes
+      // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect -- This shouldn't trigger recursive changes
       setSelectedSquare(playerCoordinate);
+      // eslint-disable-next-line @eslint-react/set-state-in-effect -- This shouldn't trigger recursive changes
       setIsPendingAction(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally non-exhaustive to only trigger when battle changes
+    // eslint-disable-next-line @eslint-react/exhaustive-deps, react-hooks/exhaustive-deps -- Intentionally non-exhaustive to only trigger when battle changes
   }, [battle]);
 
   const backgroundImage = battle.background_image
@@ -39,7 +40,7 @@ export function GameBoard(props: {
       <tbody>
         {battle.board.grid.members.map((row, y) => (
           <tr
-            key={y} // eslint-disable-line react/no-array-index-key
+            key={y} // eslint-disable-line @eslint-react/no-array-index-key
           >
             {row.map((cell, x) => {
               let image: string | undefined;
@@ -75,7 +76,7 @@ export function GameBoard(props: {
 
               return (
                 <td
-                  key={x} // eslint-disable-line react/no-array-index-key
+                  key={x} // eslint-disable-line @eslint-react/no-array-index-key
                   onClick={async () => {
                     if (isSelectedSquare) {
                       console.log("Clearning");
