@@ -109,6 +109,7 @@ fn battle_history_to_terminal_string(battle_text: &BattleText) -> String {
     Template::new(TerminalTemplateRenderer {}).render(battle_text)
 }
 
+#[allow(clippy::double_must_use)]
 #[async_trait]
 impl Actor for TerminalActor {
     fn get_character_id(&self) -> &CharacterId {

@@ -47,6 +47,7 @@ fn prioritize_cards(character: &Character, battle: &Battle) -> Vec<CardInstance>
     sorted
 }
 
+#[allow(clippy::double_must_use)]
 #[async_trait]
 impl Actor for DumbActor {
     fn get_character_id(&self) -> &CharacterId {
