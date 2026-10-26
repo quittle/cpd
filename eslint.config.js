@@ -90,4 +90,11 @@ export default [
       ],
     },
   },
+  {
+    settings: {
+      "react-x": {
+        version: "detect",
+      },
+    },
+  },
 ];
