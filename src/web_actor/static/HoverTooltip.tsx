@@ -9,18 +9,22 @@ export default function HoverTooltip(props: TooltipProps) {
   const [shown, setShown] = useState(false);
 
   useEffect(() => {
-    anchor.addEventListener("mouseover", () => {
+    const show = () => {
       setShown(true);
-    });
-    anchor.addEventListener("focus", () => {
-      setShown(true);
-    });
-    anchor.addEventListener("mouseout", () => {
+    };
+    const hide = () => {
       setShown(false);
-    });
-    anchor.addEventListener("blur", () => {
-      setShown(false);
-    });
+    };
+    anchor.addEventListener("mouseover", show);
+    anchor.addEventListener("focus", show);
+    anchor.addEventListener("mouseout", hide);
+    anchor.addEventListener("blur", hide);
+    return () => {
+      anchor.removeEventListener("mouseover", show);
+      anchor.removeEventListener("focus", show);
+      anchor.removeEventListener("mouseout", hide);
+      anchor.removeEventListener("blur", hide);
+    };
   }, [anchor]);
 
   return shown ? <Tooltip {...props} /> : null;
