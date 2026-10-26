@@ -2,6 +2,7 @@ use crate::*;
 
 use async_trait::async_trait;
 
+#[allow(clippy::double_must_use)]
 #[async_trait]
 pub trait Actor: Sync {
     /// Gets the character that this actor represents
