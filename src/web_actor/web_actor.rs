@@ -70,7 +70,6 @@ impl WebActor {
     }
 }
 
-#[allow(clippy::double_must_use)]
 #[async_trait]
 impl Actor for WebActor {
     fn get_character_id(&self) -> &CharacterId {
