@@ -209,14 +209,13 @@ dependencies = [
 
 [[package]]
 name = "actix-web-lab"
-version = "0.26.0"
+version = "0.29.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a89606b86fd2f8c0ddd72ef0be171e58c919ee0b6914aa7b52354063e5ee361"
+checksum = "1d634f96d3f94f293999b6acb4bd3c98b00e6f598be7a9b5649a35aecb90de1a"
 dependencies = [
  "actix-http",
  "actix-router",
  "actix-service",
- "actix-utils",
  "actix-web",
  "actix-web-lab-derive",
  "ahash",
@@ -226,7 +225,6 @@ dependencies = [
  "csv",
  "derive_more",
  "form_urlencoded",
- "futures-core",
  "futures-util",
  "http",
  "impl-more",
@@ -235,6 +233,7 @@ dependencies = [
  "mime",
  "pin-project-lite",
  "regex",
+ "russe",
  "serde",
  "serde_html_form",
  "serde_json",
@@ -247,12 +246,12 @@ dependencies = [
 
 [[package]]
 name = "actix-web-lab-derive"
-version = "0.26.0"
+version = "0.29.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ac4d6e04e97fe707286509b4f338e99c5fb7249c770e1da074af5e27faa96b3"
+checksum = "f3e4b5439e27c9786f334a4ca6b9dc4d148fae4d6683e1e4f6d36575a61d616d"
 dependencies = [
  "quote",
- "syn 2.0.109",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -916,9 +915,9 @@ dependencies = [
 
 [[package]]
 name = "impl-more"
-version = "0.3.1"
+version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35a84fd5aa25fae5c0f4a33d9cac2ca017fc622cbd089be2229993514990f870"
+checksum = "2d3a73c82a0b0747dba739b380c046a140b5ae747234bf701df3460282da7193"
 
 [[package]]
 name = "indexmap"
@@ -934,9 +933,9 @@ dependencies = [
 
 [[package]]
 name = "itertools"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b192c782037fadd9cfa75548310488aabdbf3d2da73885b31bd0abd03351285"
+checksum = "8b4baf93f58d4425749ca49a51c50ebab072c5df6994d08fed93541c331481dc"
 dependencies = [
  "either",
 ]
@@ -1251,6 +1250,24 @@ name = "regex-syntax"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
+
+[[package]]
+name = "russe"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56b278184c4cf1f499ad5020876c9d31961b6166526fc7415ad11f113166f91b"
+dependencies = [
+ "aho-corasick",
+ "bytes",
+ "bytestring",
+ "futures-util",
+ "impl-more",
+ "itoa",
+ "memchr",
+ "tokio",
+ "tokio-util",
+ "tracing",
+]
 
 [[package]]
 name = "ryu"
